@@ -61,7 +61,26 @@ graph TD
 
 ---
 
-## 📱 3. 화면 구성 및 API (Interface)💻 화면 흐름 (UI Flow)로그인: JWT 기반 사용자 인증 및 보안 세션 유지상품 목록/상세: Redis 캐싱을 통한 빠른 정보 조회 및 실시간 재고 확인주문/결제: 구매 클릭 시 Redis 기반 대기열 및 재고 검증 로직 진입⚙️ 주요 API 명세서비스엔드포인트설명AuthPOST /api/v1/auth/login사용자 로그인 및 토큰 발급ProductGET /api/v1/products/{id}상품 정보 및 현재 재고 조회OrderPOST /api/v1/orders핵심: Redis 재고 선차감 후 DB 저장🗄️ 4. 데이터베이스 모델링 (ERD)코드 스니펫erDiagram
+## 📱 3. 화면 구성 및 API (Interface)
+
+### 💻 화면 흐름 (UI Flow)
+* **로그인:** JWT 기반 사용자 인증 및 보안 세션 유지
+* **상품 목록/상세:** Redis 캐싱을 통한 빠른 정보 조회 및 실시간 재고 확인
+* **주문/결제:** 구매 클릭 시 Redis 기반 대기열 및 재고 검증 로직 진입
+
+### ⚙️ 주요 API 명세
+| 서비스 | 엔드포인트 | 설명 |
+| :--- | :--- | :--- |
+| **Auth** | `POST /api/v1/auth/login` | 사용자 로그인 및 토큰 발급 |
+| **Product** | `GET /api/v1/products/{id}` | 상품 정보 및 현재 재고 조회 |
+| **Order** | `POST /api/v1/orders` | **핵심:** Redis 재고 선차감 후 DB 저장 |
+
+---
+
+## 🗄️ 4. 데이터베이스 모델링 (ERD)
+
+```mermaid
+erDiagram
     USERS {
         bigint id PK
         varchar email
@@ -84,4 +103,16 @@ graph TD
     
     USERS ||--o{ ORDERS : "places"
     PRODUCTS ||--o{ ORDERS : "contains"
-🧪 5. 검증 시나리오 (Test Scenarios)[ ] ArgoCD GitOps 동기화: 소스 코드 변경 시 클러스터 배포 자동화 확인[ ] HPA 확장 테스트: k6 부하 발생 시 파드(Pod) 개수가 자동으로 늘어나는지 확인[ ] 동시성 제어 테스트: 5,000개 요청 시 정확히 한정된 재고만큼만 주문이 생성되는지 확인[ ] 장애 알림 테스트: 특정 서비스 다운 시 Prometheus 감지 및 Slack 알림 수신 확인
+```
+
+---
+
+### 🧪 5. 검증 시나리오 (Test Scenarios)
+
+```markdown
+## 🧪 5. 검증 시나리오 (Test Scenarios)
+
+- [ ] **ArgoCD GitOps 동기화:** 소스 코드 변경 시 클러스터 배포 자동화 확인
+- [ ] **HPA 확장 테스트:** k6 부하 발생 시 파드(Pod) 개수가 자동으로 늘어나는지 확인
+- [ ] **동시성 제어 테스트:** 5,000개 요청 시 정확히 한정된 재고만큼만 주문이 생성되는지 확인
+- [ ] **장애 알림 테스트:** 특정 서비스 다운 시 Prometheus 감지 및 Slack 알림 수신 확인
