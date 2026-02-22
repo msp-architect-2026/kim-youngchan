@@ -57,3 +57,7 @@ graph TD
     Product --> Cache[(Redis Cache)]
     Order --> Redis_Stock[(Redis: DECR 재고차감)]
     Order --> MySQL[(MySQL RDB: Insert)]
+
+---
+
+## 3. 화면 구성 및 API (Interface)
