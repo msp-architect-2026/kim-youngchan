@@ -1,6 +1,11 @@
 #  DropX — 대규모 선착순 한정판 주문 시스템 (High-Concurrency Order System)
 
 > **5,000 VU 트래픽 폭증 상황에서도 데이터 정합성을 보장하는 Kubernetes 기반 GitOps 주문 인프라**
+
+---
+
+##  1. 프로젝트 개요 (Overview)
+
 ![Status](https://img.shields.io/badge/Status-In%20Progress-orange?style=for-the-badge)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-Bare--metal-blue?style=for-the-badge&logo=kubernetes)
 ![GitOps](https://img.shields.io/badge/GitOps-Argo%20CD-orange?style=for-the-badge&logo=argocd)
@@ -8,9 +13,6 @@
 ![Database](https://img.shields.io/badge/Database-MySQL-blue?style=for-the-badge&logo=mysql)
 ![Cache](https://img.shields.io/badge/Cache-Redis-red?style=for-the-badge&logo=redis)
 ![Observability](https://img.shields.io/badge/Observability-Prometheus%20%2B%20Grafana-purple?style=for-the-badge&logo=prometheus)
----
-
-##  1. 프로젝트 개요 (Overview)
 
 DropX는 한정판 상품 드롭(Drop) 시 발생하는 **Spike Traffic(순간 트래픽 폭증)** 상황을 해결하기 위해 설계되었습니다.  
 애플리케이션의 단순 기능을 넘어, **대규모 트래픽을 견디는 인프라 복원력**과 **데이터 정합성 확보**를 목표로 합니다.
