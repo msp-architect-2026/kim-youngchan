@@ -100,7 +100,7 @@ graph TD
     LOKI -- "Collect Logs" --> OB
     GRAF -- "Visualize" --> PROM & LOKI
     AM -- "Slack Alert" --> Slack[Slack Channel]
-```
+
 ---
 
 ###  2.2 Application Architecture (서비스 구조도)
