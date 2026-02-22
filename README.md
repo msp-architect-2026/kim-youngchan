@@ -1,4 +1,4 @@
-#  DropX — 대규모 선착순 한정판 주문 시스템 (High-Concurrency Order System)
+#  DropX — 대규모 선착순 한정판 주문 시스템
 
 > **5,000 VU 트래픽 폭증 상황에서도 데이터 정합성을 보장하는 Kubernetes 기반 GitOps 주문 인프라**
 
