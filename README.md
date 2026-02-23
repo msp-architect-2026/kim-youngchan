@@ -224,7 +224,7 @@ graph TD
     Order --> MySQL[(MySQL RDB: Insert)]
 ```
 ---
-# 04_Workload_Application
+## 04_Workload_Application
 
 ## 🎯 목적
 이 문서는 DropX 프로젝트에서 **애플리케이션 워크로드 설계**를 다룹니다.  
