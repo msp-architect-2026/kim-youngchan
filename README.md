@@ -335,3 +335,43 @@ erDiagram
 ```
 
 ---
+### 6-1 개요
+이 프로젝트에서는 **MSA 기반 DropX 플랫폼**의 데이터 관리를 위해 관계형 데이터베이스를 설계했습니다.  
+주요 목표는 다음과 같습니다:
+
+- 서비스 간 **데이터 일관성 확보**
+- 트래픽 증가 시 **확장 가능 구조** 지원
+- GitOps/Kubernetes 환경에서 **마이그레이션 및 버전 관리 용이**
+
+---
+
+### 6-2 DB 설계 원칙
+
+1. **정규화(Normalization)**
+   - 데이터 중복 최소화
+   - 테이블 간 관계 명확화
+
+2. **관계 설계(Relationships)**
+   - 1:N, N:M 등 명확한 엔티티 관계 정의
+   - FK(Foreign Key)로 참조 무결성 보장
+
+3. **확장성 고려**
+   - MSA 서비스별 **독립 DB** 설계
+   - 필요 시 Sharding, Replica 적용 용이
+
+4. **인덱스 및 성능 최적화**
+   - 조회 빈도 높은 컬럼에 인덱스 적용
+   - 조인 및 검색 성능 고려
+
+---
+
+## 6-3 주요 테이블/엔티티 예시
+
+| 테이블명       | 설명           | 주요 컬럼                             | 관계                       |
+|----------------|----------------|--------------------------------------|----------------------------|
+| `users`        | 플랫폼 사용자  | `id`, `username`, `email`, `password_hash` | 1:N → `orders`             |
+| `orders`       | 사용자 주문 내역 | `id`, `user_id`, `product_id`, `status`, `created_at` | N:1 → `users`, N:1 → `products` |
+| `products`     | 판매 상품      | `id`, `name`, `price`, `stock`       | 1:N → `orders`             |
+| `audit_logs`   | 변경 이력      | `id`, `entity_type`, `entity_id`, `action`, `timestamp` | 추적용, 모든 테이블 연동  |
+
+> ⚡ Tip: 서비스별 DB 분리 시, `users`는 공용 DB, 주문/상품은 MSA 서비스 DB로 분리 가능
