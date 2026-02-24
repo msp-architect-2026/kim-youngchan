@@ -61,4 +61,4 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 아래는 본 프로젝트의 전체 시스템 구조도입니다.
 
-![최종 아키텍처 이미지](./docs/images/최종 아키텍처 이미지.drawio.png)
+![최종 아키텍처 이미지](https://github.com/msp-architect-2026/kim-youngchan/blob/main/docs/images/%EC%B2%B4%EC%A2%85%20%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98%20%EC%9D%B4%EB%AF%B8%EC%A7%80.drawio.png?raw=true)
