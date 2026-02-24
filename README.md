@@ -232,5 +232,5 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 ---
 
 ## 🔟 결론
-> DropX는 단순 이커머스가 아니다
+DropX는 단순 이커머스가 아니다
 동시성 충돌 상황에서 재고 정합성을 보장하는 실무형 kubernetes GitOps 기반 운영 시스템이다.
