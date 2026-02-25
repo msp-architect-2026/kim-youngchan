@@ -153,7 +153,6 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 * **Prometheus:** 실시간 RPS, 응답 시간(p95), Pod 상태 메트릭 수집
 * **Grafana:** 수집된 메트릭을 바탕으로 'DropX 통합 대시보드' 구축
-* **Loki:** 분산 환경의 로그를 중앙에서 통합 검색 및 분석
 * **Alertmanager:** 임계치 초과(예: 재고 0, Pod Restart) 시 Slack 실시간 알림
 
 ---
