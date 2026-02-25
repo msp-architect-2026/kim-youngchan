@@ -63,6 +63,16 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 <img width="2112" height="1578" alt="최종 아키텍처 이미지 drawio" src="https://github.com/user-attachments/assets/14ac94c6-6bba-46db-bf5b-a09dadf1bd0e" />
 
+### 질문 후 수정 사항
+
+| Node | Role | 주요 구성 |
+|------|------|----------|
+| PC #1 | k3s Cluster | App, Redis, MySQL, Prometheus, Grafana |
+| PC #2 | External Tools | GitLab, Runner, k6 |
+
+> 제한된 로컬 리소스 환경(16GB RAM) 에서도 실제 Kubernetes 동작을 검증하기 위해 경량 배포판인 k3s를 채택했습니다.
+> k8s -> k3s 로 변경되면 내장된 Klipper LB를 쓰는게 아닌 기존 컨셉의 MetalLB로 유지하겠습니다. 
+> 멘토링 후 확정이 된다면 위의 이미지를 환경 구성에 맞게 수정하여 변경하겠습니다.
 ---
 
 ##  5️⃣ Kubernetes Workload 설계
@@ -76,8 +86,8 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 | Deployment | Auth Service | 인증 JWT 기반 HPA의 확장 대응 |
 | Deployment | Product Service | 읽기 중심 트래픽 처리 및 HPA 확장 대응 |
 | Deployment | Order Service | 고동시성 주문 처리, HPA 기반 자동 확장 |
-| StatefulSet | MySQL | 주문 데이터의 영구 저장 및 Redis 기반 선점 처리 이후 후단 저장 |
-| StatefulSet | Redis | DB 병목 제거  |
+| StatefulSet | MySQL | 데이터 영속성 및 쓰기 일관성 보장, Redis 기반 선점 처리 이후 후단 저장 |
+| StatefulSet | Redis | 초고속 재고 처리 및 상태 복구  |
 | HPA | order Service | CPU/Memory 기준 동적 Pod 확장 |
 | ConfigMap | 공통 설정 값 | 코드와 설정 분리 (환경 변수 관리) |
 | Secret | DB, JWT Secret | 민감 정보 암호화 및 사용자 및 권한 식 |
@@ -85,7 +95,7 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 | PVC | MySQL, Redis Claim | Pod와 스토리지 바인딩 |
 | Ingress | API Gateway | 외부 트래픽 클러스터 내부 라우팅 |
 | CronJob | Job Pod | Redis–MySQL 정합성 검증 및 주문 상태 보정 |
-| RBAC | Admin API Pod | 애플리케이션 Pod 권한 격리 및 admin kill-pod |
+| RBAC | Admin API Pod | 애플리케이션 Pod 권한 격리 및 admin kill-pod 권한 분|
 | PDB | Order Service | 자발적 Pod 축출 시 최소 가용 Pod 보장|
 #### 설계 핵심 포인트
 
