@@ -86,7 +86,7 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 | Ingress | API Gateway | 외부 트래픽 클러스터 내부 라우팅 |
 | CronJob | 데이터 정합성 검증, 로그 정리 | 주기적 배치 작업 수행 |
 | RBAC | ServiceAccount/Role/RoleBinding | 최소 권한 기반 접근 제어 |
-
+| PodDisruptionBudget | Order Service | 자발적 Pod 축출 시 최소 가용 Pod 보장|
 #### 설계 핵심 포인트
 
 - **Stateless vs Stateful 분리**
@@ -259,5 +259,50 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ---
 
-## 🔟 결론
+## 🔟 향후 확장 계획
+
+DropX는 현재 고동시성 주문 환경에서의 데이터 정합성과 자동 확장성을 검증하는 데 초점을 맞추고 있습니다.  
+향후 Production Readiness 강화를 위해 아래 항목들을 단계적으로 확장할 계획입니다.
+
+---
+
+### 10-1 Loki 기반 중앙 로그 수집
+
+- Grafana Loki를 도입하여 분산 환경의 애플리케이션 로그를 중앙 집중화
+- Prometheus 메트릭과 연계한 통합 장애 분석 환경 구축
+- 장애 발생 시 Metrics → Logs → Trace 순의 추적 체계 확립
+
+### 10-2 Rate Limiting
+
+Ingress 및 Redis 기반 요청 속도 제한 적용.
+
+**Expected Impact**
+
+- Bot 트래픽 방어  
+- API 남용 방지  
+- 웨이팅 룸 이전 1차 보호 계층 확보
+
+### 10-3 Redis 기반 Waiting Room (Queue Gate)
+
+대량 트래픽 유입 시 주문 API 앞단에서 사용자 유입을 제어하는 대기열 시스템 도입 예정.
+
+**Goals**
+
+- 순간 트래픽 평탄화
+- 시스템 과부하 사전 차단
+- 공정한 선착순 처리 보장
+
+### 10-4 배포 전략 고도화 (Canary / Blue-Green)
+
+GitOps 파이프라인과 연계한 점진적 배포 전략 도입.
+
+**Goals**
+
+- 무중단 배포 안정성 향상  
+- 배포 리스크 최소화  
+- 빠른 롤백 지원  
+
+---
+
+# 결론
 DropX는 단순 이커머스가 아닌 동시성 충돌 상황에서 재고 정합성을 보장하는 실무형 kubernetes GitOps 기반 운영 시스템이다.
