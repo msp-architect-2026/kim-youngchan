@@ -159,14 +159,43 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ##  8️⃣ Kubernetes Workload 설계
 
+---
+
+### 📦 Workload 구성 표
+
 | 리소스 타입 | 대상 컴포넌트 | 설계 의도 |
-| :--- | :--- | :--- |
-| **Deployment** | Auth, Product, Order | Stateless 앱의 수평 확장(HPA) 지원 |
-| **StatefulSet** | MySQL, Redis | 데이터의 연속성과 고유 식별자 유지 (PVC 연동) |
-| **HPA** | Order Service | CPU/Memory 사용량에 따른 동적 Pod 확장 |
-| **ConfigMap** | 공통 설정 값 | 코드와 설정의 분리 (Environment Variables) |
-| **Secret** | DB, JWT Secret | 데이터베이스 접속 정보 및 인증 키 등 민감 정보 암호화 |
-| **CronJob** | 정기 배치 작업 | 일회성 데이터 정합성 검증 및 로그 정리 |
+|------------|--------------|-----------|
+| Deployment | Auth Service | Stateless 앱의 수평 확장 및 무중단 배포 지원 |
+| Deployment | Product Service | 읽기 중심 트래픽 처리 및 HPA 확장 대응 |
+| Deployment | Order Service | 고동시성 주문 처리, HPA 기반 자동 확장 |
+| StatefulSet | MySQL | 데이터 영속성 보장 및 Pod 고유 식별자 유지 |
+| StatefulSet | Redis | 캐시/락 데이터의 안정적 유지 |
+| HPA | Order Service | CPU/Memory 기준 동적 Pod 확장 |
+| ConfigMap | 공통 설정 값 | 코드와 설정 분리 (환경 변수 관리) |
+| Secret | DB, JWT Secret | 민감 정보 암호화 및 안전한 주입 |
+| PV | MySQL, Redis Storage | 영구 스토리지 제공 |
+| PVC | MySQL, Redis Claim | Pod와 스토리지 바인딩 |
+| Ingress | API Gateway | 외부 트래픽 클러스터 내부 라우팅 |
+| CronJob | 데이터 정합성 검증, 로그 정리 | 주기적 배치 작업 수행 |
+| RBAC | ServiceAccount/Role/RoleBinding | 최소 권한 기반 접근 제어 |
+
+#### 설계 핵심 포인트
+
+- **Stateless vs Stateful 분리**
+  - Deployment → 애플리케이션 계층
+  - StatefulSet → 데이터 계층
+
+- **확장 전략**
+  - HPA 기반 Order Service 자동 스케일
+  - Redis Atomic 연산으로 재고 정합성 보장
+
+- **구성 관리**
+  - ConfigMap / Secret로 설정 외부화
+  - GitOps 적용 시 선언형 관리 가능
+
+- **관측 가능성(Observability)**
+  - Prometheus + Grafana → 메트릭
+  - k6 → 부하 테스트
 
 ---
 
