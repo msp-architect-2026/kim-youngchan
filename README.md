@@ -76,7 +76,7 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ### 개발 스택 선택 이유
 
-| Component | 선택 기술 | 선택 이유 (Why Not Java/Spring?) |
+| Component | 선택 기술 | 선택 이유 (Why?) |
 | :--- | :--- | :--- |
 | **Backend** | **Python (FastAPI)** | JVM 대비 컨테이너 초기 구동(Cold Start) 시간이 짧아 HPA 확장에 유리함. 비동기(Async) 처리와 Redis Lua Script 연동이 매우 간결함. |
 | **Frontend** | **React** | SPA 기반 사용자 구매 UI 및 WebSocket을 통한 실시간 지표 렌더링. |
