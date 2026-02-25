@@ -65,99 +65,7 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ---
 
-## 5️⃣ Tech Stack & Why
-
-### 인프라 및 모니터링
-* **Kubernetes (Bare-Metal):** MSA 운영 최적화, Self-Healing, HPA 자동 확장 (VM 3대 클러스터링)
-* **MetalLB + Nginx Ingress:** 베어메탈 환경의 L4/L7 라우팅 및 TLS 시뮬레이션
-* **GitLab CI + ArgoCD:** 선언적 배포(GitOps), Sync History 관리
-* **Helm Chart:** 환경별(Dev/Prod) `values.yaml` 관리
-* **Observability (PLG Stack):** Prometheus(메트릭), Grafana(대시보드), Alertmanager
-
-### 개발 스택 선택 이유
-
-| Component | 선택 기술 | 선택 이유 (Why?) |
-| :--- | :--- | :--- |
-| **Backend** | **Python (FastAPI)** | JVM 대비 컨테이너 초기 구동(Cold Start) 시간이 짧아 HPA 확장에 유리함. 비동기(Async) 처리와 Redis Lua Script 연동이 매우 간결함. |
-| **Frontend** | **React** | SPA 기반 사용자 구매 UI 및 WebSocket을 통한 실시간 지표 렌더링. |
-| **Database** | **MySQL 8.0** | 트랜잭션 지원, 정규화 기반 주문 데이터 영속성 보장 (StatefulSet). |
-| **Cache** | **Redis** | 메모리 기반 고속 처리, 원자적 재고 관리 (StatefulSet). |
-
----
-
-##  6️⃣ API 명세서 (v1.0 Draft)
-
-**Base URL:** `/api`
-
-###  6-1. 인증 (Auth)
-
-| Method | Endpoint | Description | Request Body | Response (Success) |
-| :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/signup` | 회원가입 | `{"email": "...", "password": "...", "name": "..."}` | `{"message": "회원가입이 완료되었습니다."}` |
-| `POST` | `/login` | 로그인 | `{"email": "...", "password": "..."}` | `{"accessToken": "...", "userId": 1, "name": "..."}` |
-| `GET` | `/me` | 내 정보 조회 | `Header: Authorization: Bearer {token}` | `{"id": 1, "email": "...", "name": "..."}` |
-
-###  6-2. 상품 (Product)
-
-| Method | Endpoint | Description | Request Body | Response (Success) |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/products` | 상품 목록 조회 | `-` | `[{"id": 1, "name": "한정판 운동화", "price": 150000, "stock": 100}]` |
-| `GET` | `/products/{id}` | 상품 상세 조회 | `-` | `{"id": 1, "name": "...", "price": 150000, "stock": 100}` |
-| `POST` | `/admin/products` | 상품 등록 (관리자) | `{"name": "...", "price": 150000, "stock": 100}` | `{"message": "상품 등록 완료"}` |
-| `PUT` | `/admin/products/{id}` | 상품 수정 (관리자) | `{"price": 160000, "stock": 120}` | `{"message": "상품 수정 완료"}` |
-
-###  6-3. 재고 선점
-
-> **Redis 기반 원자적 감소 처리 및 동시성 제어 핵심 구간**
-
-| Method | Endpoint | Description | Request Body | Response (Success) |
-| :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/orders/reserve` | 재고 선점 요청 | `{"productId": 1}` | `{"success": true, "message": "선점 성공"}` |
-| `POST` | `/orders/confirm` | 주문 확정 | `{"productId": 1}` | `{"orderId": 101, "status": "CONFIRMED"}` |
-| `POST` | `/orders/cancel` | 선점 취소 | `{"productId": 1}` | `{"message": "선점 취소 완료"}` |
-
-#### 선점 실패 시 응답
-```json
-{
-  "success": false,
-  "message": "재고가 부족합니다."
-}
-```
-
-###  6-4. 주문 (Order)
-
-| Method | Endpoint | Description | Request | Response (Success) |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/orders` | 내 주문 목록 조회 | `Header: Authorization` | `[{"orderId": 101, "productId": 1, "status": "CONFIRMED"}]` |
-| `GET` | `/orders/{orderId}` | 주문 상세 조회 | `-` | `{"orderId": 101, "productId": 1, "status": "CONFIRMED"}` |
-
-
-###  6-5. 관리자 영역 (Infra + 운영 시뮬레이션)
-
-| Method | Endpoint | Description | Request Body | Response |
-| :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/admin/kill-pod` | Pod 강제 종료 시뮬레이션 | `{"podName": "app-1234"}` | `{"message": "Pod 종료 요청 완료"}` |
-| `GET` | `/admin/metrics` | 시스템 지표 요약 조회 | `-` | `{"activeUsers": 3000, "successRate": 92.1}` |
-| `GET` | `/admin/orders` | 전체 주문 조회 | `-` | `[{"orderId": 101, "status": "CONFIRMED"}]` |
-
-
-### 🛡️ 인증 / 권한 정책
-* **일반 API:** 로그인 사용자 전용 (`Bearer Token` 필요)
-* **`/api/admin/*`:** `ADMIN` Role 권한 필요
-* **`kill-pod` API:** Kubernetes RBAC 연동 및 인프라 관리자 권한 필수
-
----
-
-## 7️⃣ Observability Stack (관측성)
-단순한 로그 확인을 넘어 시스템의 수치(Metric)를 시각화하여 모니터링합니다.
-
-* **Prometheus:** 실시간 RPS, 응답 시간(p95), Pod 상태 메트릭 수집
-* **Grafana:** 수집된 메트릭을 바탕으로 'DropX 통합 대시보드' 구축
-* **Alertmanager:** 임계치 초과(예: 재고 0, Pod Restart) 시 Slack 실시간 알림
-
----
-
-##  8️⃣ Kubernetes Workload 설계
+##  5️⃣ Kubernetes Workload 설계
 
 ---
 
@@ -196,6 +104,98 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 - **관측 가능성(Observability)**
   - Prometheus + Grafana → 메트릭
   - k6 → 부하 테스트
+
+---
+
+##  6️⃣ Tech Stack & Why
+
+### 인프라 및 모니터링
+* **Kubernetes (Bare-Metal):** MSA 운영 최적화, Self-Healing, HPA 자동 확장 (VM 3대 클러스터링)
+* **MetalLB + Nginx Ingress:** 베어메탈 환경의 L4/L7 라우팅 및 TLS 시뮬레이션
+* **GitLab CI + ArgoCD:** 선언적 배포(GitOps), Sync History 관리
+* **Helm Chart:** 환경별(Dev/Prod) `values.yaml` 관리
+* **Observability (PLG Stack):** Prometheus(메트릭), Grafana(대시보드), Alertmanager
+
+### 개발 스택 선택 이유
+
+| Component | 선택 기술 | 선택 이유 (Why?) |
+| :--- | :--- | :--- |
+| **Backend** | **Python (FastAPI)** | JVM 대비 컨테이너 초기 구동(Cold Start) 시간이 짧아 HPA 확장에 유리함. 비동기(Async) 처리와 Redis Lua Script 연동이 매우 간결함. |
+| **Frontend** | **React** | SPA 기반 사용자 구매 UI 및 WebSocket을 통한 실시간 지표 렌더링. |
+| **Database** | **MySQL 8.0** | 트랜잭션 지원, 정규화 기반 주문 데이터 영속성 보장 (StatefulSet). |
+| **Cache** | **Redis** | 메모리 기반 고속 처리, 원자적 재고 관리 (StatefulSet). |
+
+---
+
+##  7️⃣ API 명세서 (v1.0 Draft)
+
+**Base URL:** `/api`
+
+###  7-1. 인증 (Auth)
+
+| Method | Endpoint | Description | Request Body | Response (Success) |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/signup` | 회원가입 | `{"email": "...", "password": "...", "name": "..."}` | `{"message": "회원가입이 완료되었습니다."}` |
+| `POST` | `/login` | 로그인 | `{"email": "...", "password": "..."}` | `{"accessToken": "...", "userId": 1, "name": "..."}` |
+| `GET` | `/me` | 내 정보 조회 | `Header: Authorization: Bearer {token}` | `{"id": 1, "email": "...", "name": "..."}` |
+
+###  7-2. 상품 (Product)
+
+| Method | Endpoint | Description | Request Body | Response (Success) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/products` | 상품 목록 조회 | `-` | `[{"id": 1, "name": "한정판 운동화", "price": 150000, "stock": 100}]` |
+| `GET` | `/products/{id}` | 상품 상세 조회 | `-` | `{"id": 1, "name": "...", "price": 150000, "stock": 100}` |
+| `POST` | `/admin/products` | 상품 등록 (관리자) | `{"name": "...", "price": 150000, "stock": 100}` | `{"message": "상품 등록 완료"}` |
+| `PUT` | `/admin/products/{id}` | 상품 수정 (관리자) | `{"price": 160000, "stock": 120}` | `{"message": "상품 수정 완료"}` |
+
+###  7-3. 재고 선점
+
+> **Redis 기반 원자적 감소 처리 및 동시성 제어 핵심 구간**
+
+| Method | Endpoint | Description | Request Body | Response (Success) |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/orders/reserve` | 재고 선점 요청 | `{"productId": 1}` | `{"success": true, "message": "선점 성공"}` |
+| `POST` | `/orders/confirm` | 주문 확정 | `{"productId": 1}` | `{"orderId": 101, "status": "CONFIRMED"}` |
+| `POST` | `/orders/cancel` | 선점 취소 | `{"productId": 1}` | `{"message": "선점 취소 완료"}` |
+
+#### 선점 실패 시 응답
+```json
+{
+  "success": false,
+  "message": "재고가 부족합니다."
+}
+```
+
+###  7-4. 주문 (Order)
+
+| Method | Endpoint | Description | Request | Response (Success) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/orders` | 내 주문 목록 조회 | `Header: Authorization` | `[{"orderId": 101, "productId": 1, "status": "CONFIRMED"}]` |
+| `GET` | `/orders/{orderId}` | 주문 상세 조회 | `-` | `{"orderId": 101, "productId": 1, "status": "CONFIRMED"}` |
+
+
+###  7-5. 관리자 영역 (Infra + 운영 시뮬레이션)
+
+| Method | Endpoint | Description | Request Body | Response |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/admin/kill-pod` | Pod 강제 종료 시뮬레이션 | `{"podName": "app-1234"}` | `{"message": "Pod 종료 요청 완료"}` |
+| `GET` | `/admin/metrics` | 시스템 지표 요약 조회 | `-` | `{"activeUsers": 3000, "successRate": 92.1}` |
+| `GET` | `/admin/orders` | 전체 주문 조회 | `-` | `[{"orderId": 101, "status": "CONFIRMED"}]` |
+
+
+### 🛡️ 인증 / 권한 정책
+* **일반 API:** 로그인 사용자 전용 (`Bearer Token` 필요)
+* **`/api/admin/*`:** `ADMIN` Role 권한 필요
+* **`kill-pod` API:** Kubernetes RBAC 연동 및 인프라 관리자 권한 필수
+
+---
+
+## 8️⃣ Observability Stack (관측성)
+단순한 로그 확인을 넘어 시스템의 수치(Metric)를 시각화하여 모니터링합니다.
+
+* **Prometheus:** 실시간 RPS, 응답 시간(p95), Pod 상태 메트릭 수집
+* **Grafana:** 수집된 메트릭을 바탕으로 'DropX 통합 대시보드' 구축
+* **Alertmanager:** 임계치 초과(예: 재고 0, Pod Restart) 시 Slack 실시간 알림
 
 ---
 
