@@ -73,20 +73,20 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 | 리소스 타입 | 대상 컴포넌트 | 설계 의도 |
 |------------|--------------|-----------|
-| Deployment | Auth Service | Stateless 앱의 수평 확장 및 무중단 배포 지원 |
+| Deployment | Auth Service | 인증 JWT 기반 HPA의 확장 대응 |
 | Deployment | Product Service | 읽기 중심 트래픽 처리 및 HPA 확장 대응 |
 | Deployment | Order Service | 고동시성 주문 처리, HPA 기반 자동 확장 |
-| StatefulSet | MySQL | 데이터 영속성 보장 및 Pod 고유 식별자 유지 |
-| StatefulSet | Redis | 캐시/락 데이터의 안정적 유지 |
-| HPA | Order Service | CPU/Memory 기준 동적 Pod 확장 |
+| StatefulSet | MySQL | 주문 데이터의 영구 저장 및 Redis 기반 선점 처리 이후 후단 저장 |
+| StatefulSet | Redis | DB 병목 제거  |
+| HPA | order Service | CPU/Memory 기준 동적 Pod 확장 |
 | ConfigMap | 공통 설정 값 | 코드와 설정 분리 (환경 변수 관리) |
-| Secret | DB, JWT Secret | 민감 정보 암호화 및 안전한 주입 |
+| Secret | DB, JWT Secret | 민감 정보 암호화 및 사용자 및 권한 식 |
 | PV | MySQL, Redis Storage | 영구 스토리지 제공 |
 | PVC | MySQL, Redis Claim | Pod와 스토리지 바인딩 |
 | Ingress | API Gateway | 외부 트래픽 클러스터 내부 라우팅 |
-| CronJob | 데이터 정합성 검증, 로그 정리 | 주기적 배치 작업 수행 |
-| RBAC | ServiceAccount/Role/RoleBinding | 최소 권한 기반 접근 제어 |
-| PodDisruptionBudget | Order Service | 자발적 Pod 축출 시 최소 가용 Pod 보장|
+| CronJob | Job Pod | Redis–MySQL 정합성 검증 및 주문 상태 보정 |
+| RBAC | Admin API Pod | 애플리케이션 Pod 권한 격리 및 admin kill-pod |
+| PDB | Order Service | 자발적 Pod 축출 시 최소 가용 Pod 보장|
 #### 설계 핵심 포인트
 
 - **Stateless vs Stateful 분리**
