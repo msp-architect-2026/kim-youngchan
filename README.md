@@ -222,36 +222,57 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 ###  MySQL: 관계형 데이터베이스 (Persistence Layer)
 
 #### 📌 Table 1: `users` (사용자)
-| 컬럼명 | 타입 | 제약조건 | 설명 |
+| 컬럼 | 타입 | 제약 조건 | 설명 |
 | :--- | :--- | :--- | :--- |
-| **id** | BIGINT | PK, AI | 고유 사용자 ID |
-| **email** | VARCHAR(100) | UNIQUE, NOT NULL | 로그인 이메일 |
-| **password_hash** | VARCHAR(255) | NOT NULL | 암호화된 비밀번호 |
-| **role** | ENUM | DEFAULT 'USER' | 권한 (`USER`, `ADMIN`) |
-| **is_deleted** | BOOLEAN | DEFAULT FALSE | 소프트 삭제 여부 |
-| **created_at** | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 가입 일시 |
+| **id** | BIGINT | PK, AUTO_INCREMENT | 유저 식별자 |
+| **email** | VARCHAR(255) | UNIQUE, NOT NULL | 로그인 이메일 |
+| **password_hash** | VARCHAR(255) | NOT NULL | 해시된 비밀번호 |
+| **name** | VARCHAR(100) | NOT NULL | 회원 이름 |
+| **role** | ENUM | 'USER', 'ADMIN' | 권한 구분 (Default: 'USER') |
+| **created_at** | DATETIME | DEFAULT CURRENT_TIMESTAMP | 생성일 |
 
-#### 📌 Table 2: `products` (상품)
-| 컬럼명 | 타입 | 제약조건 | 설명 |
-| :--- | :--- | :--- | :--- |
-| **id** | BIGINT | PK, AI | 상품 고유 ID |
-| **name** | VARCHAR(100) | NOT NULL | 상품명 |
-| **price** | DECIMAL(12,2) | NOT NULL | 상품 가격 |
-| **total_stock** | INT | NOT NULL | 초기 전체 재고 |
-| **is_drop** | BOOLEAN | DEFAULT FALSE | 드롭 상품 여부 |
-| **drop_start_at** | DATETIME | NULL | 판매 시작 시간 |
-| **drop_end_at** | DATETIME | NULL | 판매 종료 시간 |
+* **JWT Payload:** `sub: id`, `role: role`, `exp: timestamp`
 
-#### 📌 Table 3: `orders` (주문)
-| 컬럼명 | 타입 | 제약조건 | 설명 |
+#### 📌 Table 2: `Sneakers` (상품 정보)
+| 컬럼 | 타입 | 제약 조건 | 설명 |
 | :--- | :--- | :--- | :--- |
-| **id** | BIGINT | PK, AI | 주문 고유 번호 |
-| **user_id** | BIGINT | FK (users.id) | 주문자 ID |
-| **product_id** | BIGINT | FK (products.id) | 주문 상품 ID |
-| **status** | ENUM | NOT NULL | 상태 (`SUCCESS`, `CANCEL`) |
-| **process_ms** | INT | NULL | 처리 소요 시간(ms) |
+| **id** | BIGINT | PK, AUTO_INCREMENT | 상품 ID |
+| **brand** | VARCHAR(50) | NOT NULL | 브랜드 (Nike, Adidas 등) |
+| **name** | VARCHAR(100) | NOT NULL | 모델명 |
+| **price** | INT | NOT NULL | 판매 가격 |
+| **drop_at** | DATETIME | NOT NULL | 드롭 예정 시간 |
+| **created_at** | DATETIME | DEFAULT CURRENT_TIMESTAMP | 등록일 |
+
+#### 📌 Table 3: `SneakerSizes` (사이즈별 재고)
+| 컬럼 | 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| **id** | BIGINT | PK, AUTO_INCREMENT | PK |
+| **sneaker_id** | BIGINT | FK → Sneakers.id | 상품 외래키 |
+| **size** | INT | NOT NULL | 사이즈 (ex: 260) |
+| **stock** | INT | NOT NULL | MySQL 최종 재고 |
+| **updated_at** | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 마지막 수정 시점 |
+> **Redis Mapping:** `stock:{sneaker_id}:{size}` 키로 실시간 재고 관리
+
+#### 📌 Table 4: `orders` (주문 내역)
+| 컬럼 | 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| **id** | BIGINT | PK, AUTO_INCREMENT | 주문 ID |
+| **user_id** | BIGINT | FK → Users.id | 주문자 외래키 |
+| **sneaker_id** | BIGINT | FK → Sneakers.id | 상품 외래키 |
+| **size** | INT | NOT NULL | 선택 사이즈 |
+| **status** | ENUM | RESERVED, CONFIRMED, CANCELLED | 주문 상태 |
+| **reserve_token** | VARCHAR(255) | UNIQUE, NOT NULL | Redis 선점 검증 토큰 |
+| **created_at** | DATETIME | DEFAULT CURRENT_TIMESTAMP | 주문 시간 |
 
 > **인덱스 전략** > `UNIQUE KEY uk_user_product (user_id, product_id)` : 1인 1개 구매 제한 방어
+
+#### 📌 Table 5: `System Logs` (Infra & Consistency)
+| 컬럼 | 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| **id** | BIGINT | PK, AUTO_INCREMENT | 로그 ID |
+| **type** | VARCHAR(50) | NOT NULL | EVENT, CONSISTENCY, METRIC |
+| **message** | TEXT | NOT NULL | 상세 로그 (JSON 등) |
+| **created_at** | DATETIME | DEFAULT CURRENT_TIMESTAMP | 기록 시간 |
 
 ---
 
