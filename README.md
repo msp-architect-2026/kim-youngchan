@@ -149,14 +149,14 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 | `POST` | `/login` | 로그인 | `{"email": "...", "password": "..."}` | `{"accessToken": "...", "userId": 1, "name": "..."}` |
 | `GET` | `/me` | 내 정보 조회 | `Header: Authorization: Bearer {token}` | `{"id": 1, "email": "...", "name": "..."}` |
 
-###  7-2. 상품 (Product)
+###  7-2. 운동화 상품 (Sneaker Product)
 
 | Method | Endpoint | Description | Request Body | Response (Success) |
 | :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/products` | 상품 목록 조회 | `-` | `[{"id": 1, "name": "한정판 운동화", "price": 150000, "stock": 100}]` |
-| `GET` | `/products/{id}` | 상품 상세 조회 | `-` | `{"id": 1, "name": "...", "price": 150000, "stock": 100}` |
-| `POST` | `/admin/products` | 상품 등록 (관리자) | `{"name": "...", "price": 150000, "stock": 100}` | `{"message": "상품 등록 완료"}` |
-| `PUT` | `/admin/products/{id}` | 상품 수정 (관리자) | `{"price": 160000, "stock": 120}` | `{"message": "상품 수정 완료"}` |
+| `GET` | `/sneakers` | 드롭 예정/진행 상품 목록 | `-` | `[{"id": 1, "brand": "Nike", "name": "Jordan 1", "price": 199000, "dropAt": "2024-12-25T10:00:00Z"}]` |
+| `GET` | `/sneakers/{id}` | 상품 상세 및 사이즈별 잔여 재고 | `-` | `{"id": 1, "name": "...", "sizes": [{"size": 260, "stock": 10}, {"size": 270, "stock": 45}]}` |
+| `POST` | `/admin/sneakers` | 한정판 운동화 등록 (관리자) | `{"name": "..", "brand": "..", "sizes": [260, 270], "dropAt": "..."}` | `{"message": "드롭 상품 등록 완료"}` |
+| `DELETE` | `/admin/sneakers/{id}` | 상품 삭제 (관리자) | `-` | `{"message": "삭제 완료"}` |
 
 ###  7-3. 재고 선점
 
@@ -164,9 +164,8 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 | Method | Endpoint | Description | Request Body | Response (Success) |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/orders/reserve` | 재고 선점 요청 | `{"productId": 1}` | `{"success": true, "message": "선점 성공"}` |
-| `POST` | `/orders/confirm` | 주문 확정 | `{"productId": 1}` | `{"orderId": 101, "status": "CONFIRMED"}` |
-| `POST` | `/orders/cancel` | 선점 취소 | `{"productId": 1}` | `{"message": "선점 취소 완료"}` |
+| `POST` | `/orders/reserve` | 특정 사이즈 재고 선점 요청 | `{"productId": 1, "size": 270}` | `{"success": true, "token": "res_v1_abc123"}` |
+| `POST` | `/orders/confirm` | 선점 성공 후 최종 주문 확정 | `{"token": "res_v1_abc123"}` | `{"orderId": 101, "status": "CONFIRMED"}` |
 
 #### 선점 실패 시 응답
 ```json
@@ -191,6 +190,13 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 | `POST` | `/admin/kill-pod` | Pod 강제 종료 시뮬레이션 | `{"podName": "app-1234"}` | `{"message": "Pod 종료 요청 완료"}` |
 | `GET` | `/admin/metrics` | 시스템 지표 요약 조회 | `-` | `{"activeUsers": 3000, "successRate": 92.1}` |
 | `GET` | `/admin/orders` | 전체 주문 조회 | `-` | `[{"orderId": 101, "status": "CONFIRMED"}]` |
+
+###  7-6. 실시간 드롭 현황 (Sneaker Drop Live)
+
+| Method | Endpoint | Description | Response (Success) |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/sneakers/{id}/stock/live` | 특정 상품의 실시간 총 잔여 재고 (Redis 직접 조회) | `{"productId": 1, "totalStock": 100, "status": "LIVE"}` |
+| `GET` | `/admin/sneakers/{id}/metrics` | 드롭 진행 중 사이즈별 판매 속도/경쟁률 | `{"260": {"sold": 10, "waiting": 150}, "270": {"sold": 45, "waiting": 1200}}` |
 
 
 ### 🛡️ 인증 / 권한 정책
