@@ -196,12 +196,12 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 * **Prometheus:** 실시간 RPS, 응답 시간(p95), Pod 상태 메트릭 수집
 * **Grafana:** 수집된 메트릭을 바탕으로 'DropX 통합 대시보드' 구축
 * **Alertmanager:** 임계치 초과(예: 재고 0, Pod Restart) 시 Slack 실시간 알림
-
+* **k6:** 부하 테스트(k6) 결과와 Prometheus 메트릭을 연계하여 HPA 스케일 아웃 타이밍과 응답 지연(p95)의 상관관계를 분석했습니다.
 ---
 
 ## 9️⃣ 데이터 모델링 (MySQL + Redis)
 
-> DropX는 대규모 트래픽 환경에서 한정판 상품(Drop)을 안정적으로 판매하기 위해 **영구 저장소(MySQL)**와 **고속 정합성 레이어(Redis)**를 분리하여 설계되었습니다.
+> DropX는 대규모 트래픽 환경에서 한정판 상품(Drop)을 안정적으로 판매하기 위해 **영구 저장소(MySQL)**와 **고속 정합성 레이어(Redis)**를 분리하여 설계되었습니다. 또한 Redis 선점 성공 후 MySQL 저장 실패에 대비하여, 주문 상태 보정 및 재처리를 위한 CronJob 기반 정합성 검증 작업을 설계했습니다.
 
 ###  MySQL: 관계형 데이터베이스 (Persistence Layer)
 
