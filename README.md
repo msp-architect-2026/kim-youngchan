@@ -282,6 +282,8 @@ Ingress 및 Redis 기반 요청 속도 제한 적용.
 - API 남용 방지  
 - 웨이팅 룸 이전 1차 보호 계층 확보
 
+> 본 프로젝트는 시스템의 한계 상황과 Self-Healing 능력을 검증하기 위해 초기 단계에서는 Rate Limiting을 의도적으로 적용하지 않았습니다.
+
 ### 10-3 Redis 기반 Waiting Room (Queue Gate)
 
 대량 트래픽 유입 시 주문 API 앞단에서 사용자 유입을 제어하는 대기열 시스템 도입 예정.
