@@ -115,9 +115,25 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ## 4️⃣ 아키텍처
 
-아래는 본 프로젝트의 전체 시스템 구조도입니다.
+>아래는 본 프로젝트의 쿠버네티스 인프라 아키텍처입니다.
 
-<img width="2112" height="1578" alt="최종 아키텍처 이미지 drawio" src="https://github.com/user-attachments/assets/14ac94c6-6bba-46db-bf5b-a09dadf1bd0e" />
+<img width="2106" height="1794" alt="쿠버네티스 아키텍처 drawio" src="https://github.com/user-attachments/assets/81cb4c43-d04c-490e-bcb8-84c10f89b236" />
+<br>
 
 ---
 
+## 5️⃣ 서비스 흐름도
+>아래는 본 프로젝트 아키텍처 흐름을 쉽게 파악하기 위한 이미지입니다.
+
+<img width="2112" height="1578" alt="서비스 흐름도 drawio" src="https://github.com/user-attachments/assets/292681bd-a7ec-4ada-a418-57d424a7befc" />
+
+---
+
+## 6️⃣ 문서 안내
+
+| 문서 명칭 | 바로가기 |
+| :--- | :--- |
+| 📖 **Wiki 전체 문서** | [Wiki 바로가기](#) |
+| 🔗 **API 명세** | [API 명세 바로가기](#) |
+| 📁 **데이터 모델 및 ERD** | [데이터 모델 바로가기](#) |
+| 🛠️ **트러블슈팅** | [트러블슈팅 바로가기](#) |
