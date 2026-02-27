@@ -6,58 +6,6 @@
 
 ---
 
-## 1️⃣ Why DropX Exists (기획 배경)
-한정판 상품 드롭(Drop) 상황에서는 일반적인 쇼핑몰 아키텍처로 감당할 수 없는 다음 문제들이 발생합니다:
-*  **순간 트래픽 폭증 (Spike Traffic)**
-*  **DB Lock 경합 및 커넥션 풀 고갈**
-*  **재고 음수 발생 (Race Condition)**
-*  **Pod 과부하 및 연쇄 장애**
-*  **배포 중 서비스 중단**
-
-DropX는 단순한 기능 구현을 넘어, **위의 인프라/동시성 문제들을 아키텍처 관점에서 어떻게 해결하는지 증명**하기 위해 설계되었습니다.
-
----
-
-## 2️⃣ Core Problem & Goals (목표 지표)
-* **동시 접속자:** 5,000 VU (Virtual Users)
-* **한정판 재고:** 100개
-* **재고 음수:** **0건**
-* **평균 응답속도:** 200ms 이하 보장
-* **장애 대응:** Pod 강제 종료 시 자동 복구 및 성공률 유지
-
----
-
-## 3️⃣ 핵심 해결 전략 (Core Strategies)
-
-### 3-1. 재고 정합성 보장 (Data Integrity)
-* **문제:** 동시에 5,000명이 `UPDATE stock = stock - 1`을 요청하면 Race Condition이 발생하여 재고가 음수가 됨.
-* **해결 방식: Redis Atomic 연산 + Lua Script**
-  1. Redis에서 재고 `DECR` (원자적 처리)
-  2. 성공(0 이상)한 요청만 MySQL Insert (비동기/배치)
-  3. 실패(음수)한 요청은 즉시 품절 반환 및 `INCR` 복구
-  * **효과:** DB Lock 최소화, 초저지연 처리, 재고 음수 0 보장.
-
-
-### 3-2. 트래픽 폭증 대응 (Auto Scaling)
-* **Kubernetes HPA (Horizontal Pod Autoscaler)** 적용
-* CPU 사용률 60% 초과 시 `Order Service` Pod을 1개에서 최대 5개로 자동 Scale-out.
-
-### 3-3. 장애 대응 (Self-Healing)
-* 관리자 API를 통한 **Pod 강제 종료(Kill Pod)** 테스트 환경 구축.
-* `StatefulSet` 기반 DB/Redis 영속성 복구.
-* `ReplicaSet` 기반 서비스 자동 복구 및 트래픽 재조정.
-
-### 3-4. GitOps 기반 배포 자동화
-```text
-Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
-```
-* Git이 인프라의 Source of Truth 역할을 수행.
-* 완벽한 Rollback 실습 및 선언적 배포 구현.
-<br>
-
-
----
-
  # 🛠 Tech Stack
 
 ### Container & Orchestration
@@ -113,7 +61,7 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ---
 
-## 4️⃣ 아키텍처
+## 아키텍처
 
 >아래는 본 프로젝트의 쿠버네티스 인프라 아키텍처입니다.
 
@@ -122,18 +70,69 @@ Git Push → GitLab CI(Build) → Helm Update → ArgoCD Sync → K8s Rollout
 
 ---
 
-## 5️⃣ 서비스 흐름도
+## 서비스 흐름도
 >아래는 본 프로젝트 아키텍처 흐름을 쉽게 파악하기 위한 이미지입니다.
 
 <img width="2112" height="1578" alt="서비스 흐름도 drawio" src="https://github.com/user-attachments/assets/292681bd-a7ec-4ada-a418-57d424a7befc" />
 
 ---
 
-## 6️⃣ 문서 안내
+## 📚 문서 안내
 
-| 문서 명칭 | 바로가기 |
+### 📖 Wiki 전체 문서
+| 분류 | 문서 명칭 | 설명 |
+| :--- | :--- | :--- |
+| **🏠 Wiki Home** | [Wiki 메인 페이지](링크) | 프로젝트 전체 개요 및 단계별 설계 문서 |
+
+### 🛠 기술 문서
+| 문서 명칭 | 설명 |
 | :--- | :--- |
-| 📖 **Wiki 전체 문서** | [Wiki 바로가기](#) |
-| 🔗 **API 명세** | [API 명세 바로가기](#) |
-| 📁 **데이터 모델 및 ERD** | [데이터 모델 바로가기](#) |
-| 🛠️ **트러블슈팅** | [트러블슈팅 바로가기](#) |
+| [🔗 API 명세서](링크) | REST API 엔드포인트 (auth, product, order) 및 Request/Response 스펙 |
+| [📊 ERD 및 데이터 모델](링크) | MySQL 스키마 설계 (users, products, orders, order_items) |
+| [⚙️ 환경 설정 가이드](링크) | k3s 설치, MetalLB 구성, Registry 연동 단계별 가이드 |
+| [🔧 트러블슈팅](링크) | 자주 발생하는 이슈 및 해결 방법 (OOMKilled, ImagePullBackOff 등) |
+
+### 🏗 아키텍처 문서
+| 문서 명칭 | 설명 |
+| :--- | :--- |
+| [🎯 전체 아키텍처](링크) | k3s 기반 쿠버네티스 인프라 다이어그램 |
+| [🔄 서비스 흐름도](링크) | Ingress → Service → Pod → DB 요청 처리 흐름 |
+| [⚡ 재고 동시성 제어](링크) | Redis Lua Script 기반 Atomic 연산 설계 |
+| [📦 리소스 예산 계획](링크) | 12GB VM 기준 CPU/Memory 할당 전략 |
+
+### 🚀 배포 및 운영 가이드
+| 문서 명칭 | 설명 |
+| :--- | :--- |
+| [01. Registry 설정](링크) | GitLab Registry HTTP 연동 및 imagePullSecret 구성 |
+| [02. 모니터링 설치](링크) | kube-prometheus-stack 설치 및 Grafana 대시보드 |
+| [03. ArgoCD 연동](링크) | GitOps 기반 자동 배포 구성 |
+| [04. k6 부하 테스트](링크) | 5,000 VU 시나리오 및 성능 검증 |
+| [🔄 HPA 운영 가이드](링크) | order-service 오토스케일링 정책 및 모니터링 |
+| [💾 백업 및 복구](링크) | MySQL PVC 스냅샷 및 Redis RDB 백업 전략 |
+
+### 📊 메트릭 및 모니터링
+| 문서 명칭 | 설명 |
+| :--- | :--- |
+| [📈 Prometheus 메트릭 가이드](링크) | 커스텀 메트릭 정의 (order_requests_total, redis_stock_remaining 등) |
+| [📊 Grafana 대시보드](링크) | 실시간 KPI 패널 (재고, 주문 성공률, p95 레이턴시) |
+| [🚨 Alert 정책](링크) | OOMKilled, CPU Throttling, Pod Down 알림 규칙 |
+
+### 🔒 보안 및 정책
+| 문서 명칭 | 설명 |
+| :--- | :--- |
+| [ JWT 인증 구현](링크) | HS256 기반 토큰 발급 및 검증 로직 |
+| [ Secret 관리 가이드](링크) | Kubernetes Secret 생성 및 Git 제외 정책 |
+| [ RBAC 정책](링크) | ServiceAccount 기반 최소 권한 부여 |
+
+### 📝 회고 및 이력
+| 문서 명칭 | 설명 |
+| :--- | :--- |
+| [🗓 Sprint 회고](링크) | Phase별 진행 상황 및 개선 사항 |
+| [📌 릴리즈 노트](링크) | 버전별 변경 사항 및 배포 이력 |
+| [🐛 Known Issues](링크) | 현재 알려진 제약 사항 및 향후 개선 계획 |
+
+### 🔍 빠른 링크
+- 🚀 **시작하기**: [환경 설정 가이드](링크) → [Registry 설정](링크) → [모니터링 설치](링크)
+- 🏗 **아키텍처 이해**: [전체 아키텍처](링크) → [서비스 흐름도](링크)
+- 📊 **성능 검증**: [k6 부하 테스트](링크) → [Grafana 대시보드](링크)
+- 🔧 **문제 해결**: [트러블슈팅](링크) → [Known Issues](링크)
