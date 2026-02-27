@@ -76,6 +76,7 @@
 <img width="2112" height="1578" alt="서비스 흐름도 drawio" src="https://github.com/user-attachments/assets/292681bd-a7ec-4ada-a418-57d424a7befc" />
 
 ---
+<br>
 
 ## 📚 문서 안내
 
@@ -91,40 +92,6 @@
 | [📊 ERD 및 데이터 모델](링크) | MySQL 스키마 설계 (users, products, orders, order_items) |
 | [⚙️ 환경 설정 가이드](링크) | k3s 설치, MetalLB 구성, Registry 연동 단계별 가이드 |
 | [🔧 트러블슈팅](링크) | 자주 발생하는 이슈 및 해결 방법 (OOMKilled, ImagePullBackOff 등) |
-
-### 🏗 아키텍처 문서
-| 문서 명칭 | 설명 |
-| :--- | :--- |
-| [🎯 전체 아키텍처](링크) | k3s 기반 쿠버네티스 인프라 다이어그램 |
-| [🔄 서비스 흐름도](링크) | Ingress → Service → Pod → DB 요청 처리 흐름 |
-| [⚡ 재고 동시성 제어](링크) | Redis Lua Script 기반 Atomic 연산 설계 |
-| [📦 리소스 예산 계획](링크) | 12GB VM 기준 CPU/Memory 할당 전략 |
-
-### 🚀 배포 및 운영 가이드
-| 문서 명칭 | 설명 |
-| :--- | :--- |
-| [01. Registry 설정](링크) | GitLab Registry HTTP 연동 및 imagePullSecret 구성 |
-| [02. 모니터링 설치](링크) | kube-prometheus-stack 설치 및 Grafana 대시보드 |
-| [03. ArgoCD 연동](링크) | GitOps 기반 자동 배포 구성 |
-| [04. k6 부하 테스트](링크) | 5,000 VU 시나리오 및 성능 검증 |
-| [🔄 HPA 운영 가이드](링크) | order-service 오토스케일링 정책 및 모니터링 |
-| [💾 백업 및 복구](링크) | MySQL PVC 스냅샷 및 Redis RDB 백업 전략 |
-
-### 📊 메트릭 및 모니터링
-| 문서 명칭 | 설명 |
-| :--- | :--- |
-| [📈 Prometheus 메트릭 가이드](링크) | 커스텀 메트릭 정의 (order_requests_total, redis_stock_remaining 등) |
-| [📊 Grafana 대시보드](링크) | 실시간 KPI 패널 (재고, 주문 성공률, p95 레이턴시) |
-| [🚨 Alert 정책](링크) | OOMKilled, CPU Throttling, Pod Down 알림 규칙 |
-
-### 🔒 보안 및 정책
-| 문서 명칭 | 설명 |
-| :--- | :--- |
-| [JWT 인증 구현](링크) | HS256 기반 토큰 발급 및 검증 로직 |
-| [Secret 관리 가이드](링크) | Kubernetes Secret 생성 및 Git 제외 정책 |
-| [RBAC 정책](링크) | ServiceAccount 기반 최소 권한 부여 |
-
----
 
 ### 📝 회고 및 이력
 | 문서 명칭 | 설명 |
