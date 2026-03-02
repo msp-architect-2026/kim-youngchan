@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dropx-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  MYSQL_HOST: {{ .Values.config.mysqlHost | quote }}
+  MYSQL_PORT: {{ .Values.config.mysqlPort | quote }}
+  MYSQL_DB: {{ .Values.config.mysqlDb | quote }}
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  RESERVE_TOKEN_TTL_SEC: {{ .Values.config.reserveTokenTtlSec | quote }}
+  ORDER_LOCK_TTL_SEC: {{ .Values.config.orderLockTtlSec | quote }}
+  METRICS_PORT: {{ .Values.config.metricsPort | quote }}

@@ -1,0 +1,111 @@
+# DropX Helm Values
+# 이 파일 하나에서 모든 환경 설정을 관리합니다.
+# ArgoCD는 이 values.yaml을 읽어 templates/ 를 렌더링합니다.
+
+# ── 글로벌 ─────────────────────────────────────────────────────────────────
+global:
+  namespace: dropx
+  registry: "192.168.10.100"          # GitLab Container Registry IP
+  imageTag: "latest"                  # CI/CD에서 커밋 SHA로 덮어씀
+  imagePullPolicy: Always
+  imagePullSecret: "gitlab-registry-secret"
+
+# ── ConfigMap ───────────────────────────────────────────────────────────────
+config:
+  mysqlHost: "mysql.dropx.svc.cluster.local"
+  mysqlPort: "3306"
+  mysqlDb: "dropx"
+  redisHost: "redis.dropx.svc.cluster.local"
+  redisPort: "6379"
+  appEnv: "production"
+  logLevel: "INFO"
+  reserveTokenTtlSec: "180"
+  orderLockTtlSec: "300"
+  metricsPort: "8001"
+
+# ── Secret (실 값은 절대 Git 커밋 금지) ────────────────────────────────────
+# 적용 전 실 값으로 교체 후 kubectl apply, 이후 REPLACE_ME 로 되돌릴 것
+secret:
+  mysqlUser: "dropx_user"
+  mysqlPassword: "REPLACE_ME"
+  mysqlRootPassword: "REPLACE_ME"
+  jwtSecretKey: "REPLACE_ME"          # openssl rand -hex 32
+  registryUser: "root"
+  registryPassword: "REPLACE_ME"
+
+# ── MySQL ───────────────────────────────────────────────────────────────────
+mysql:
+  image: "mysql:8.0.36"
+  storage: "10Gi"
+  storageClass: "local-path"
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "800m"
+      memory: "1Gi"
+
+# ── Redis ───────────────────────────────────────────────────────────────────
+redis:
+  image: "redis:7.2.4-alpine"
+  storage: "2Gi"
+  storageClass: "local-path"
+  maxmemory: "400mb"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# ── Auth Service ────────────────────────────────────────────────────────────
+authService:
+  image: "192.168.10.100/root/ci/dropx-auth"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "400m"
+      memory: "256Mi"
+
+# ── Product Service ─────────────────────────────────────────────────────────
+productService:
+  image: "192.168.10.100/root/ci/dropx-product"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "400m"
+      memory: "256Mi"
+
+# ── Order Service ───────────────────────────────────────────────────────────
+orderService:
+  image: "192.168.10.100/root/ci/dropx-order"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "800m"
+      memory: "512Mi"
+
+# ── HPA ─────────────────────────────────────────────────────────────────────
+hpa:
+  minReplicas: 1
+  maxReplicas: 5
+  cpuUtilization: 60
+
+# ── Ingress ─────────────────────────────────────────────────────────────────
+ingress:
+  host: "dropx.local"
+  className: "nginx"
+  proxyReadTimeout: "60"
+  proxySendTimeout: "60"
+  proxyConnectTimeout: "10"

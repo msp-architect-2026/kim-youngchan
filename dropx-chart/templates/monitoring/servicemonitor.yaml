@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dropx-services
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: dropx
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.global.namespace }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dropx-alerts
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    release: prometheus
+spec:
+  groups:
+    - name: dropx.critical
+      rules:
+        - alert: OrderServiceDown
+          expr: up{job="order-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Order Service 다운"
+            description: "order-service Pod가 1분 이상 응답 없음"
+        - alert: RedisStockNegative
+          expr: dropx_stock_gauge < 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "재고 음수 감지"
+            description: "Redis 재고가 음수로 감소 — 즉시 확인 필요"

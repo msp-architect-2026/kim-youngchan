@@ -1,0 +1,13 @@
+apiVersion: v2
+name: dropx
+description: DropX - 한정판 운동화 드롭 초고트래픽 주문 인프라
+type: application
+version: 0.1.0        # 차트 버전 (매니페스트 변경 시 올림)
+appVersion: "1.0.0"   # 앱 버전 (FastAPI 앱 버전과 맞춤)
+keywords:
+  - dropx
+  - fastapi
+  - k3s
+  - high-traffic
+maintainers:
+  - name: dropx-team

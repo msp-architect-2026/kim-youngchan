@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redis
+    app.kubernetes.io/part-of: dropx
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          ports:
+            - containerPort: 6379
+              name: redis
+          command:
+            - redis-server
+            - --appendonly
+            - "yes"
+            - --appendfsync
+            - "everysec"
+            - --maxmemory
+            - {{ .Values.redis.maxmemory | quote }}
+            - --maxmemory-policy
+            - "noeviction"
+            - --tcp-keepalive
+            - "60"
+            - --hz
+            - "20"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: {{ .Values.redis.resources.requests.cpu | quote }}
+              memory: {{ .Values.redis.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.redis.resources.limits.cpu | quote }}
+              memory: {{ .Values.redis.resources.limits.memory | quote }}
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: redis
+spec:
+  clusterIP: None
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379

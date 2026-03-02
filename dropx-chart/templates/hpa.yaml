@@ -1,0 +1,83 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dropx-ingress
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.proxyReadTimeout | quote }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.proxySendTimeout | quote }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: {{ .Values.ingress.proxyConnectTimeout | quote }}
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          # ── Auth Service ────────────────────────────────
+          - path: /api/signup
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 80
+          - path: /api/login
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 80
+          - path: /api/me
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 80
+          # ── Product Service ─────────────────────────────
+          - path: /api/sneakers
+            pathType: Prefix
+            backend:
+              service:
+                name: product-service
+                port:
+                  number: 80
+          - path: /api/admin/sneakers
+            pathType: Prefix
+            backend:
+              service:
+                name: product-service
+                port:
+                  number: 80
+          # ── Order Service ───────────────────────────────
+          - path: /api/orders
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80
+          - path: /api/admin/kill-pod
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80
+          - path: /api/admin/metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80
+          - path: /api/admin/orders
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80

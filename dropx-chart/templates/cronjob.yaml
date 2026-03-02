@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: consistency-checker
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: consistency-checker
+    app.kubernetes.io/part-of: dropx
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: consistency-checker
+        spec:
+          serviceAccountName: dropx-app-sa
+          imagePullSecrets:
+            - name: {{ .Values.global.imagePullSecret }}
+          restartPolicy: OnFailure
+          containers:
+            - name: checker
+              image: "{{ .Values.orderService.image }}:{{ .Values.global.imageTag }}"
+              imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+              command: ["python", "-m", "app.jobs.consistency_check"]
+              envFrom:
+                - configMapRef:
+                    name: dropx-config
+                - secretRef:
+                    name: dropx-secret
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "128Mi"

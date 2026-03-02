@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: product-service
+    app.kubernetes.io/part-of: dropx
+spec:
+  replicas: {{ .Values.productService.replicas }}
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.config.metricsPort | quote }}
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: dropx-app-sa
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret }}
+      containers:
+        - name: product-service
+          image: "{{ .Values.productService.image }}:{{ .Values.global.imageTag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+            - name: metrics
+              containerPort: 8001
+          envFrom:
+            - configMapRef:
+                name: dropx-config
+            - secretRef:
+                name: dropx-secret
+          resources:
+            requests:
+              cpu: {{ .Values.productService.resources.requests.cpu | quote }}
+              memory: {{ .Values.productService.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.productService.resources.limits.cpu | quote }}
+              memory: {{ .Values.productService.resources.limits.memory | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: product-service
+    app.kubernetes.io/part-of: dropx
+spec:
+  selector:
+    app: product-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+    - name: metrics
+      port: 8001
+      targetPort: 8001
