@@ -1,3 +1,4 @@
+{{- if .Values.authService.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -77,3 +78,4 @@ spec:
     - name: metrics
       port: 8001
       targetPort: 8001
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.orderService.enabled }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -8,3 +9,4 @@ spec:
   selector:
     matchLabels:
       app: order-service
+{{- end }}
