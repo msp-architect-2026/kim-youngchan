@@ -33,11 +33,66 @@ spec:
               containerPort: 8000
             - name: metrics
               containerPort: 8001
-          envFrom:
-            - configMapRef:
-                name: dropx-config
-            - secretRef:
-                name: dropx-secret
+          env:
+            # ── MySQL (auth-service 키 형식: snake_case) ──────────────
+            - name: mysql_host
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: MYSQL_HOST
+            - name: mysql_port
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: MYSQL_PORT
+            - name: mysql_db
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: MYSQL_DB
+            - name: mysql_user
+              valueFrom:
+                secretKeyRef:
+                  name: dropx-secret
+                  key: MYSQL_USER
+            - name: mysql_password
+              valueFrom:
+                secretKeyRef:
+                  name: dropx-secret
+                  key: MYSQL_PASSWORD
+            # ── Redis ────────────────────────────────────────────────
+            - name: redis_host
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: REDIS_HOST
+            - name: redis_port
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: REDIS_PORT
+            # ── JWT ──────────────────────────────────────────────────
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dropx-secret
+                  key: JWT_SECRET_KEY
+            # ── 공통 ─────────────────────────────────────────────────
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: APP_ENV
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: LOG_LEVEL
+            - name: METRICS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dropx-config
+                  key: METRICS_PORT
           resources:
             requests:
               cpu: {{ .Values.authService.resources.requests.cpu | quote }}
