@@ -36,7 +36,7 @@ secret:
 # ── MySQL ───────────────────────────────────────────────────────────────────
 mysql:
   image: "mysql:8.0.36"
-  storage: "10Gi"
+  storage: "5Gi"
   storageClass: "local-path"
   resources:
     requests:
