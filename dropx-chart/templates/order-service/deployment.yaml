@@ -94,16 +94,16 @@ spec:
                 configMapKeyRef:
                   name: dropx-config
                   key: LOG_LEVEL
-            - name: RESERVE_TOKEN_TTL_SEC
+            - name: RESERVE_TOKEN_TTL
               valueFrom:
                 configMapKeyRef:
                   name: dropx-config
-                  key: RESERVE_TOKEN_TTL_SEC
-            - name: ORDER_LOCK_TTL_SEC
+                  key: RESERVE_TOKEN_TTL
+            - name: ORDER_LOCK_TTL
               valueFrom:
                 configMapKeyRef:
                   name: dropx-config
-                  key: ORDER_LOCK_TTL_SEC
+                  key: ORDER_LOCK_TTL
             - name: METRICS_PORT
               valueFrom:
                 configMapKeyRef:

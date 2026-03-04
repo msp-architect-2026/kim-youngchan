@@ -11,6 +11,11 @@ data:
   REDIS_PORT: {{ .Values.config.redisPort | quote }}
   APP_ENV: {{ .Values.config.appEnv | quote }}
   LOG_LEVEL: {{ .Values.config.logLevel | quote }}
-  RESERVE_TOKEN_TTL_SEC: {{ .Values.config.reserveTokenTtlSec | quote }}
-  ORDER_LOCK_TTL_SEC: {{ .Values.config.orderLockTtlSec | quote }}
+  RESERVE_TOKEN_TTL: {{ .Values.config.reserveTokenTtlSec | quote }}
+  ORDER_LOCK_TTL: {{ .Values.config.orderLockTtlSec | quote }}
   METRICS_PORT: {{ .Values.config.metricsPort | quote }}
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "40"
+  REDIS_MAX_CONNECTIONS: "100"
+  CACHE_TTL: "300"
+  REDIS_DB: "0"
