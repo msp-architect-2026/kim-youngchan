@@ -1,10 +1,10 @@
 # DropX GitLab CI/CD Pipeline
 #
-# 현재 활성화: auth-service 빌드 및 배포
+# 현재 활성화: auth-service
 # 추후 활성화: product-service, order-service (주석 해제)
 #
-# 📌 GitLab CI/CD Variables (Settings → CI/CD → Variables) 필수 등록:
-#   CI_REGISTRY_PASSWORD : GitLab Personal Access Token (Masked)
+# 📌 GitLab CI/CD Variables 필수 등록:
+#   CI_REGISTRY_PASSWORD : GitLab Personal Access Token  (Masked)
 #   ARGOCD_SERVER        : 192.168.10.232
 #   ARGOCD_AUTH_TOKEN    : argocd account generate-token --account admin (Masked)
 
@@ -107,26 +107,27 @@ deploy:
     # values.yaml imageTag 교체
     - |
       sed -i "s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
-    # 변경사항 커밋 & push ([skip ci] 로 무한루프 방지)
+    # 변경사항 없으면 skip
     - |
       git add dropx-chart/values.yaml
       git diff --cached --quiet && echo "변경 없음 — skip" && exit 0
       git commit -m "ci: update imageTag to $IMAGE_TAG [skip ci]"
       git push http://root:$CI_REGISTRY_PASSWORD@192.168.10.100/root/ci.git HEAD:main
-    # ArgoCD sync 트리거
+    # ArgoCD sync 트리거 (Content-Type 헤더 추가)
     - |
-      curl -sk -X POST \
+      RESPONSE=$(curl -sk -X POST \
         -H "Authorization: Bearer $ARGOCD_AUTH_TOKEN" \
         -H "Content-Type: application/json" \
         https://$ARGOCD_SERVER/api/v1/applications/dropx/sync \
-        -d '{"revision":"main"}' | grep -o '"phase":"[^"]*"'
+        -d '{"revision":"main"}')
+      echo $RESPONSE | grep -o '"status":"[^"]*"' | head -1
       echo "✅ ArgoCD sync 트리거 완료"
   only:
     - main
   needs:
     - job: build-auth
       optional: true
-    # - job: build-product   # 추후 주석 해제
+    # - job: build-product
     #   optional: true
-    # - job: build-order     # 추후 주석 해제
+    # - job: build-order
     #   optional: true
