@@ -1,0 +1,132 @@
+# DropX GitLab CI/CD Pipeline
+#
+# 현재 활성화: auth-service 빌드 및 배포
+# 추후 활성화: product-service, order-service (주석 해제)
+#
+# 📌 GitLab CI/CD Variables (Settings → CI/CD → Variables) 필수 등록:
+#   CI_REGISTRY_PASSWORD : GitLab Personal Access Token (Masked)
+#   ARGOCD_SERVER        : 192.168.10.232
+#   ARGOCD_AUTH_TOKEN    : argocd account generate-token --account admin (Masked)
+
+stages:
+  - build
+  - deploy
+
+variables:
+  REGISTRY: "192.168.10.100"
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+
+# ──────────────────────────────────────────────────────────────
+# 공통 Docker 빌드 템플릿
+# ──────────────────────────────────────────────────────────────
+.build-template: &build-template
+  stage: build
+  image: docker:24.0
+  services:
+    - name: docker:24.0-dind
+      variables:
+        DOCKER_TLS_CERTDIR: ""
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $REGISTRY
+        --username root --password-stdin
+  only:
+    - main
+
+# ──────────────────────────────────────────────────────────────
+# auth-service 빌드 & push
+# ──────────────────────────────────────────────────────────────
+build-auth:
+  <<: *build-template
+  script:
+    - |
+      docker build \
+        -t $REGISTRY/root/ci/dropx-auth:$IMAGE_TAG \
+        -t $REGISTRY/root/ci/dropx-auth:latest \
+        ./auth-service
+      docker push $REGISTRY/root/ci/dropx-auth:$IMAGE_TAG
+      docker push $REGISTRY/root/ci/dropx-auth:latest
+      echo "✅ auth-service 빌드 완료 → $IMAGE_TAG"
+  only:
+    refs:
+      - main
+    changes:
+      - auth-service/**/*
+
+# ──────────────────────────────────────────────────────────────
+# product-service 빌드 & push (추후 활성화)
+# ──────────────────────────────────────────────────────────────
+# build-product:
+#   <<: *build-template
+#   script:
+#     - |
+#       docker build \
+#         -t $REGISTRY/root/ci/dropx-product:$IMAGE_TAG \
+#         -t $REGISTRY/root/ci/dropx-product:latest \
+#         ./product-service
+#       docker push $REGISTRY/root/ci/dropx-product:$IMAGE_TAG
+#       docker push $REGISTRY/root/ci/dropx-product:latest
+#   only:
+#     refs:
+#       - main
+#     changes:
+#       - product-service/**/*
+
+# ──────────────────────────────────────────────────────────────
+# order-service 빌드 & push (추후 활성화)
+# ──────────────────────────────────────────────────────────────
+# build-order:
+#   <<: *build-template
+#   script:
+#     - |
+#       docker build \
+#         -t $REGISTRY/root/ci/dropx-order:$IMAGE_TAG \
+#         -t $REGISTRY/root/ci/dropx-order:latest \
+#         ./order-service
+#       docker push $REGISTRY/root/ci/dropx-order:$IMAGE_TAG
+#       docker push $REGISTRY/root/ci/dropx-order:latest
+#   only:
+#     refs:
+#       - main
+#     changes:
+#       - order-service/**/*
+
+# ──────────────────────────────────────────────────────────────
+# values.yaml imageTag 업데이트 → ArgoCD sync 트리거
+# ──────────────────────────────────────────────────────────────
+deploy:
+  stage: deploy
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache git curl
+    - git config --global user.email "ci@dropx.local"
+    - git config --global user.name "GitLab CI"
+  script:
+    # values.yaml imageTag 교체
+    - |
+      sed -i "s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
+    # 변경사항 커밋 & push ([skip ci] 로 무한루프 방지)
+    - |
+      git add dropx-chart/values.yaml
+      git diff --cached --quiet && echo "변경 없음 — skip" && exit 0
+      git commit -m "ci: update imageTag to $IMAGE_TAG [skip ci]"
+      git push http://root:$CI_REGISTRY_PASSWORD@192.168.10.100/root/ci.git HEAD:main
+    # ArgoCD sync 트리거
+    - |
+      curl -sk -X POST \
+        -H "Authorization: Bearer $ARGOCD_AUTH_TOKEN" \
+        -H "Content-Type: application/json" \
+        https://$ARGOCD_SERVER/api/v1/applications/dropx/sync \
+        -d '{"revision":"main"}' | grep -o '"phase":"[^"]*"'
+      echo "✅ ArgoCD sync 트리거 완료"
+  only:
+    - main
+  needs:
+    - job: build-auth
+      optional: true
+    # - job: build-product   # 추후 주석 해제
+    #   optional: true
+    # - job: build-order     # 추후 주석 해제
+    #   optional: true
