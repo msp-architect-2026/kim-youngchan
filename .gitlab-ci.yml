@@ -120,7 +120,7 @@ deploy:
         -H "Content-Type: application/json" \
         https://$ARGOCD_SERVER/api/v1/applications/dropx/sync \
         -d '{"revision":"main"}')
-      echo $RESPONSE | grep -o '"status":"[^"]*"' | head -1
+      echo $RESPONSE | grep -o '"status":"[^"]*"' | head -1 || true
       echo "✅ ArgoCD sync 트리거 완료"
   only:
     - main
