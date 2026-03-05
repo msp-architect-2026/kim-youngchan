@@ -4,6 +4,9 @@ uvicorn[standard]==0.27.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
 
+# Authentication (must use python-jose, NOT PyJWT)
+python-jose[cryptography]==3.3.0
+
 # Async Database Drivers
 aiomysql==0.2.0
 redis[hiredis]==5.0.1
@@ -11,7 +14,9 @@ redis[hiredis]==5.0.1
 # ORM (optional, for type hints and migrations)
 sqlalchemy==2.0.25
 
+# Monitoring
+prometheus-client==0.19.0
+
 # Utilities
 python-multipart==0.0.6
 python-dotenv==1.0.0
-

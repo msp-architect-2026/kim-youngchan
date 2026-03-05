@@ -21,4 +21,7 @@ EXPOSE 8000 8001
 
 # Docker HEALTHCHECK는 삭제합니다. (K8s Probe가 대신 수행)
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Run main app on 8000 and metrics on 8001
+CMD uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 & \
+    uvicorn app.metrics:metrics_app --host 0.0.0.0 --port 8001 --workers 1 && \
+    wait

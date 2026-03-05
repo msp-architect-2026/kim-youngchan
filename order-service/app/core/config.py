@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # Admin Settings
     ADMIN_SECRET_KEY: str = "change-this-in-production"
     
+    # JWT Settings (must match auth-service)
+    JWT_SECRET_KEY: str = "your-jwt-secret-key-change-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

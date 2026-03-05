@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
@@ -8,6 +7,7 @@ from app.core.config import get_settings
 from app.core.database import db
 from app.core.redis_client import redis_client
 from app.api import order, admin
+from app.metrics import MetricsMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -65,6 +65,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add metrics middleware
+app.add_middleware(MetricsMiddleware)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -91,16 +94,19 @@ async def root():
 
 @app.get("/health")
 async def health():
-    db_ok = db.pool is not None
-    redis_ok = redis_client.client is not None
+    """
+    Health check endpoint
     
-    if not db_ok or not redis_ok:
-        return JSONResponse(
-            status_code=503,
-            content={"status": "unhealthy", "db": db_ok, "redis": redis_ok}
-        )
-    
-    return {"status": "healthy", "db": True, "redis": True}
+    Used by:
+    - Kubernetes livenessProbe
+    - Kubernetes readinessProbe
+    - Load balancer health checks
+    """
+    return {
+        "status": "healthy",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION
+    }
 
 
 @app.get("/live")
