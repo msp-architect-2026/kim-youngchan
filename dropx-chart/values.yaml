@@ -63,7 +63,7 @@ redis:
 # ── Auth Service ────────────────────────────────────────────────────────────
 authService:
   enabled: true          # 이미지 준비 완료 후 true로 변경
-  image: "192.168.10.100/root/ci/dropx-auth"
+  image: "192.168.10.100:5050/root/ci/dropx-auth"
   replicas: 1
   resources:
     requests:
@@ -76,7 +76,7 @@ authService:
 # ── Product Service ─────────────────────────────────────────────────────────
 productService:
   enabled: false          # 이미지 준비 완료 후 true로 변경
-  image: "192.168.10.100/root/ci/dropx-product"
+  image: "192.168.10.100:5050/root/ci/dropx-product"
   replicas: 1
   resources:
     requests:
@@ -89,7 +89,7 @@ productService:
 # ── Order Service ───────────────────────────────────────────────────────────
 orderService:
   enabled: false          # 이미지 준비 완료 후 true로 변경
-  image: "192.168.10.100/root/ci/dropx-order"
+  image: "192.168.10.100:5050/root/ci/dropx-order"
   replicas: 1
   resources:
     requests:
