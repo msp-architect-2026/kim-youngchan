@@ -18,10 +18,12 @@ variables:
 # ──────────────────────────────────────────────────────────────
 .build-template: &build-template
   stage: build
-  image: docker:27
+  image: docker:24.0
   variables:
     DOCKER_HOST: "unix:///var/run/docker.sock"
   before_script:
+    - mkdir -p /etc/docker
+    - echo '{"insecure-registries":["192.168.10.100"]}' > /etc/docker/daemon.json
     - echo "$CI_REGISTRY_PASSWORD" | docker login $REGISTRY
         --username root --password-stdin
   only:
