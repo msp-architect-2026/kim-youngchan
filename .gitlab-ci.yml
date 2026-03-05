@@ -10,7 +10,7 @@ stages:
   - deploy
 
 variables:
-  REGISTRY: "192.168.10.100"
+  REGISTRY: "192.168.10.100:5050"
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA
 
 # ──────────────────────────────────────────────────────────────
