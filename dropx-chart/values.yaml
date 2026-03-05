@@ -6,7 +6,7 @@
 global:
   namespace: dropx
   registry: "192.168.10.100"          # GitLab Container Registry IP
-  imageTag: "d9635d69"
+  imageTag: "b05fbc36"
   imagePullPolicy: Always
   imagePullSecret: "gitlab-registry-secret"
 
