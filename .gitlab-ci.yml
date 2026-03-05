@@ -18,7 +18,7 @@ variables:
 # ──────────────────────────────────────────────────────────────
 .build-template: &build-template
   stage: build
-  image: docker:24.0
+  image: docker:27
   variables:
     DOCKER_HOST: "unix:///var/run/docker.sock"
   before_script:
