@@ -16,21 +16,7 @@ spec:
       http:
         paths:
           # ── Auth Service ────────────────────────────────
-          - path: /api/signup
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-service
-                port:
-                  number: 80
-          - path: /api/login
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-service
-                port:
-                  number: 80
-          - path: /api/me
+          - path: /api/auth
             pathType: Prefix
             backend:
               service:

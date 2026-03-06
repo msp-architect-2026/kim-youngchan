@@ -78,8 +78,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(order.router)
-app.include_router(admin.router)
+app.include_router(order.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
 
 
 @app.get("/")
