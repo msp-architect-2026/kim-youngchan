@@ -14,9 +14,8 @@ class OrderStatus(str, Enum):
 # ============= Order Endpoints =============
 
 class ReserveRequest(BaseModel):
-    user_id: int = Field(..., gt=0, description="User ID")
-    sneaker_id: int = Field(..., gt=0, description="Sneaker Product ID")
-    size: float = Field(..., ge=220, le=300, description="Shoe size (mm)")
+    sneaker_id: int = Field(..., gt=0)
+    size: float = Field(..., ge=220, le=300)
 
 
 class ReserveResponse(BaseModel):
