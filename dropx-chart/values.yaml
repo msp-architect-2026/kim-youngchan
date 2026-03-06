@@ -67,7 +67,7 @@ authService:
 productService:
   enabled: true         # 이미지 준비 완료 후 true로 변경
   image: "192.168.10.100:5050/root/ci/dropx-product"
-  imageTag: "c36998ff"
+  imageTag: "fe4a3657"
   replicas: 1
   resources:
     requests:
