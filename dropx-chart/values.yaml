@@ -81,7 +81,7 @@ productService:
 orderService:
   enabled: true         # 이미지 준비 완료 후 true로 변경
   image: "192.168.10.100:5050/root/ci/dropx-order"
-  imageTag: "6cb07230"
+  imageTag: "ccf6e71e"
   replicas: 1
   resources:
     requests:
