@@ -5,7 +5,7 @@
 # ── 글로벌 ─────────────────────────────────────────────────────────────────
 global:
   namespace: dropx
-  registry: "192.168.10.100"          # GitLab Container Registry IP
+  registry: "192.168.10.100:5050"          # GitLab Container Registry IP
   imageTag: "f8db1578"
   imagePullPolicy: Always
   imagePullSecret: "gitlab-registry-secret"
@@ -22,16 +22,6 @@ config:
   reserveTokenTtlSec: "180"
   orderLockTtlSec: "300"
   metricsPort: "8001"
-
-# ── Secret (실 값은 절대 Git 커밋 금지) ────────────────────────────────────
-# 적용 전 실 값으로 교체 후 kubectl apply, 이후 REPLACE_ME 로 되돌릴 것
-secret:
-  mysqlUser: "dropx_user"
-  mysqlPassword: "REPLACE_ME"
-  mysqlRootPassword: "REPLACE_ME"
-  jwtSecretKey: "REPLACE_ME"          # openssl rand -hex 32
-  registryUser: "root"
-  registryPassword: "REPLACE_ME"
 
 # ── MySQL ───────────────────────────────────────────────────────────────────
 mysql:
