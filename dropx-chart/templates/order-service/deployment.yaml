@@ -32,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: order-service
-          image: "{{ .Values.orderService.image }}:{{ .Values.global.imageTag }}"
+          image: "{{ .Values.orderService.image }}:{{ .Values.orderService.imageTag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http

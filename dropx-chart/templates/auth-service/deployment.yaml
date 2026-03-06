@@ -26,7 +26,7 @@ spec:
         - name: {{ .Values.global.imagePullSecret }}
       containers:
         - name: auth-service
-          image: "{{ .Values.authService.image }}:{{ .Values.global.imageTag }}"
+          image: "{{ .Values.authService.image }}:{{ .Values.authService.imageTag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http

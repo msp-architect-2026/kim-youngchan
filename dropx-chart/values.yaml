@@ -6,7 +6,6 @@
 global:
   namespace: dropx
   registry: "192.168.10.100:5050"          # GitLab Container Registry IP
-  imageTag: "f8db1578"
   imagePullPolicy: Always
   imagePullSecret: "gitlab-registry-secret"
 
@@ -54,6 +53,7 @@ redis:
 authService:
   enabled: true          # 이미지 준비 완료 후 true로 변경
   image: "192.168.10.100:5050/root/ci/dropx-auth"
+  imageTag: "ee315a86"
   replicas: 1
   resources:
     requests:
@@ -67,6 +67,7 @@ authService:
 productService:
   enabled: true         # 이미지 준비 완료 후 true로 변경
   image: "192.168.10.100:5050/root/ci/dropx-product"
+  imageTag: "c36998ff"
   replicas: 1
   resources:
     requests:
@@ -80,6 +81,7 @@ productService:
 orderService:
   enabled: true         # 이미지 준비 완료 후 true로 변경
   image: "192.168.10.100:5050/root/ci/dropx-order"
+  imageTag: "ee315a86"
   replicas: 1
   resources:
     requests:

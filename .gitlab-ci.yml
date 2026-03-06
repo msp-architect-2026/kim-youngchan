@@ -103,7 +103,9 @@ deploy:
   script:
     # values.yaml imageTag 교체
     - |
-      sed -i "s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
+      sed -i "/^authService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
+      sed -i "/^productService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
+      sed -i "/^orderService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
     # 변경사항 없으면 skip
     - |
       git add dropx-chart/values.yaml
