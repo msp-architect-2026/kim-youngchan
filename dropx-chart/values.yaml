@@ -95,7 +95,7 @@ orderService:
 frontendService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-frontend"
-  imageTag: "latest"
+  imageTag: "43eb2f0b"
   resources:
     requests:
       cpu: "50m"
