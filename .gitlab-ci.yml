@@ -42,7 +42,12 @@ build-auth:
         ./auth-service
       docker push $REGISTRY/root/ci/dropx-auth:$IMAGE_TAG
       docker push $REGISTRY/root/ci/dropx-auth:latest
+      echo "true" > built_auth.txt
       echo "✅ auth-service 빌드 완료 → $IMAGE_TAG"
+  artifacts:
+    paths:
+      - built_auth.txt
+    expire_in: 1 hour
   only:
     refs:
       - main
@@ -62,7 +67,12 @@ build-product:
         ./product-service
       docker push $REGISTRY/root/ci/dropx-product:$IMAGE_TAG
       docker push $REGISTRY/root/ci/dropx-product:latest
+      echo "true" > built_product.txt
       echo "✅ product-service 빌드 완료 → $IMAGE_TAG"
+  artifacts:
+    paths:
+      - built_product.txt
+    expire_in: 1 hour
   only:
     refs:
       - main
@@ -82,7 +92,12 @@ build-order:
         ./order-service
       docker push $REGISTRY/root/ci/dropx-order:$IMAGE_TAG
       docker push $REGISTRY/root/ci/dropx-order:latest
+      echo "true" > built_order.txt
       echo "✅ order-service 빌드 완료 → $IMAGE_TAG"
+  artifacts:
+    paths:
+      - built_order.txt
+    expire_in: 1 hour
   only:
     refs:
       - main
@@ -94,25 +109,22 @@ build-order:
 # ──────────────────────────────────────────────────────────────
 deploy:
   stage: deploy
-  when: manual
   image: alpine:3.19
   before_script:
     - apk add --no-cache git curl
     - git config --global user.email "ci@dropx.local"
     - git config --global user.name "GitLab CI"
   script:
-    # values.yaml imageTag 교체
     - |
-      sed -i "/^authService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
-      sed -i "/^productService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
-      sed -i "/^orderService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml
-    # 변경사항 없으면 skip
+      # artifact 파일 기준으로 빌드된 서비스만 태그 업데이트
+      [ -f built_auth.txt ]    && sed -i "/^authService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml    && echo "✅ auth imageTag → $IMAGE_TAG"
+      [ -f built_product.txt ] && sed -i "/^productService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml && echo "✅ product imageTag → $IMAGE_TAG"
+      [ -f built_order.txt ]   && sed -i "/^orderService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml   && echo "✅ order imageTag → $IMAGE_TAG"
     - |
       git add dropx-chart/values.yaml
       git diff --cached --quiet && echo "변경 없음 — skip" && exit 0
       git commit -m "ci: update imageTag to $IMAGE_TAG [skip ci]"
       git push http://root:$CI_REGISTRY_PASSWORD@192.168.10.100/root/ci.git HEAD:main
-    # ArgoCD sync 트리거
     - |
       RESPONSE=$(curl -sk -X POST \
         -H "Authorization: Bearer $ARGOCD_AUTH_TOKEN" \
