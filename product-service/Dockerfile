@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
-COPY start.sh /app/start.sh
+COPY app/start.sh /app/start.sh
 
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app && \
