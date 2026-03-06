@@ -188,7 +188,7 @@ async def health_check():
             status="healthy" if overall_healthy else "degraded",
             database="ok" if db_healthy else "error",
             redis="ok" if redis_healthy else "error"
-        ).model_dump()
+        ).model_dump(mode="json")
     )
 
 @app.get("/", tags=["Root"])
