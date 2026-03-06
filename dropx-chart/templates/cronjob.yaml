@@ -26,7 +26,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: checker
-              image: "{{ .Values.orderService.image }}:{{ .Values.global.imageTag }}"
+              image: "{{ .Values.orderService.image }}:{{ .Values.orderService.imageTag }}"
               imagePullPolicy: {{ .Values.global.imagePullPolicy }}
               command: ["python", "-m", "app.jobs.consistency_check"]
               envFrom:
