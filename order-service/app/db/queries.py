@@ -85,3 +85,9 @@ CANCEL_EXPIRED_RESERVATION = """
     SET status = 'CANCELLED', updated_at = NOW()
     WHERE id = %s AND status = 'RESERVED'
 """
+# ============= Stock Queries =============
+DECREMENT_DB_STOCK = """
+    UPDATE sneaker_sizes
+    SET stock = stock - 1
+    WHERE sneaker_id = %s AND size = %s AND stock > 0
+"""

@@ -6,7 +6,8 @@ import logging
 from app.core.config import get_settings
 from app.core.database import db
 from app.core.redis_client import redis_client
-from app.api import order, admin
+from app.api.order import router as order_router
+from app.api.admin import router as admin_router
 from app.metrics import MetricsMiddleware
 
 # Configure logging
@@ -78,8 +79,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(order.router, prefix="/api")
-app.include_router(admin.router, prefix="/api")
+app.include_router(order_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 
 
 @app.get("/")
