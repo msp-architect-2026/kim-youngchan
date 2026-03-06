@@ -105,6 +105,31 @@ build-order:
       - order-service/**/*
 
 # ──────────────────────────────────────────────────────────────
+# frontend-service 빌드 & push
+# ──────────────────────────────────────────────────────────────
+build-frontend:
+  <<: *build-template
+  script:
+    - |
+      docker build \
+        -t $REGISTRY/root/ci/dropx-frontend:$IMAGE_TAG \
+        -t $REGISTRY/root/ci/dropx-frontend:latest \
+        ./frontend-service
+      docker push $REGISTRY/root/ci/dropx-frontend:$IMAGE_TAG
+      docker push $REGISTRY/root/ci/dropx-frontend:latest
+      echo "true" > built_frontend.txt
+      echo "✅ frontend-service 빌드 완료 → $IMAGE_TAG"
+  artifacts:
+    paths:
+      - built_frontend.txt
+    expire_in: 1 hour
+  only:
+    refs:
+      - main
+    changes:
+      - frontend-service/**/*
+
+# ──────────────────────────────────────────────────────────────
 # values.yaml imageTag 업데이트 → ArgoCD sync 트리거
 # ──────────────────────────────────────────────────────────────
 deploy:
@@ -116,10 +141,10 @@ deploy:
     - git config --global user.name "GitLab CI"
   script:
     - |
-      # artifact 파일 기준으로 빌드된 서비스만 태그 업데이트
-      [ -f built_auth.txt ]    && sed -i "/^authService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml    && echo "✅ auth imageTag → $IMAGE_TAG"
-      [ -f built_product.txt ] && sed -i "/^productService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml && echo "✅ product imageTag → $IMAGE_TAG"
-      [ -f built_order.txt ]   && sed -i "/^orderService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml   && echo "✅ order imageTag → $IMAGE_TAG"
+      [ -f built_auth.txt ]     && sed -i "/^authService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml     && echo "✅ auth imageTag → $IMAGE_TAG"
+      [ -f built_product.txt ]  && sed -i "/^productService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml  && echo "✅ product imageTag → $IMAGE_TAG"
+      [ -f built_order.txt ]    && sed -i "/^orderService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml    && echo "✅ order imageTag → $IMAGE_TAG"
+      [ -f built_frontend.txt ] && sed -i "/^frontendService:/,/^[a-zA-Z]/ s/imageTag:.*/imageTag: \"$IMAGE_TAG\"/" dropx-chart/values.yaml && echo "✅ frontend imageTag → $IMAGE_TAG"
     - |
       git add dropx-chart/values.yaml
       git diff --cached --quiet && echo "변경 없음 — skip" && exit 0
@@ -141,4 +166,6 @@ deploy:
     - job: build-product
       optional: true
     - job: build-order
+      optional: true
+    - job: build-frontend
       optional: true

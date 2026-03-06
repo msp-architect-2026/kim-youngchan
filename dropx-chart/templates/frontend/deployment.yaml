@@ -1,0 +1,63 @@
+{{- if .Values.frontendService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: frontend-service
+    app.kubernetes.io/part-of: dropx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-service
+  template:
+    metadata:
+      labels:
+        app: frontend-service
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontendService.image }}:{{ .Values.frontendService.imageTag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: {{ .Values.frontendService.resources.requests.cpu }}
+              memory: {{ .Values.frontendService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.frontendService.resources.limits.cpu }}
+              memory: {{ .Values.frontendService.resources.limits.memory }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: frontend-service
+spec:
+  selector:
+    app: frontend-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+{{- end }}

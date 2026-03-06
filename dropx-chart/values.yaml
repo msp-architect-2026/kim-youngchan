@@ -51,7 +51,7 @@ redis:
 
 # ── Auth Service ────────────────────────────────────────────────────────────
 authService:
-  enabled: true          # 이미지 준비 완료 후 true로 변경
+  enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-auth"
   imageTag: "b0a7e07f"
   replicas: 1
@@ -65,7 +65,7 @@ authService:
 
 # ── Product Service ─────────────────────────────────────────────────────────
 productService:
-  enabled: true         # 이미지 준비 완료 후 true로 변경
+  enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-product"
   imageTag: "fe4a3657"
   replicas: 1
@@ -79,7 +79,7 @@ productService:
 
 # ── Order Service ───────────────────────────────────────────────────────────
 orderService:
-  enabled: true         # 이미지 준비 완료 후 true로 변경
+  enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-order"
   imageTag: "e1562f3f"
   replicas: 1
@@ -90,6 +90,19 @@ orderService:
     limits:
       cpu: "800m"
       memory: "512Mi"
+
+# ── Frontend Service ────────────────────────────────────────────────────────
+frontendService:
+  enabled: true
+  image: "192.168.10.100:5050/root/ci/dropx-frontend"
+  imageTag: "latest"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
 
 # ── HPA ─────────────────────────────────────────────────────────────────────
 hpa:
@@ -104,3 +117,4 @@ ingress:
   proxyReadTimeout: "60"
   proxySendTimeout: "60"
   proxyConnectTimeout: "10"
+  
