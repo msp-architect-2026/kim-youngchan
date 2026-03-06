@@ -43,7 +43,7 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     reserve_token: str
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
 
 
 class OrderListResponse(BaseModel):
