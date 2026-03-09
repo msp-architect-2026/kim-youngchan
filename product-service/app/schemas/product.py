@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class SizeStockSchema(BaseModel):
     """Size and stock information schema"""
     size: int
-    
+    stock: int
     model_config = ConfigDict(from_attributes=True)
 
 
