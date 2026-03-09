@@ -11,9 +11,9 @@ export default function DropDetail() {
   const { token } = useAuthStore()
 
   const [sneaker, setSneaker] = useState(null)
-  const [stock, setStock] = useState({})
+  const [stock, setStock] = useState({})   // { 255: 10, 260: 20, ... }
   const [selectedSize, setSelectedSize] = useState(null)
-  const [phase, setPhase] = useState('idle') // idle | reserving | reserved | confirming | done | error
+  const [phase, setPhase] = useState('idle')
   const [reserveToken, setReserveToken] = useState(null)
   const [orderId, setOrderId] = useState(null)
   const [error, setError] = useState('')
@@ -21,13 +21,22 @@ export default function DropDetail() {
 
   useEffect(() => {
     productAPI.detail(id).then(setSneaker).catch(() => {})
-    const fetchStock = () => productAPI.liveStock(id).then(setStock).catch(() => {})
+
+    const fetchStock = () =>
+      productAPI.liveStock(id)
+        .then(d => {
+          // d = { sneaker_id, total_stock, sizes: [{size, stock}, ...], source }
+          const map = {}
+          d.sizes?.forEach(s => { map[s.size] = s.stock })
+          setStock(map)
+        })
+        .catch(() => {})
+
     fetchStock()
     const interval = setInterval(fetchStock, 3000)
     return () => clearInterval(interval)
   }, [id])
 
-  // Countdown for reserved phase
   useEffect(() => {
     if (phase !== 'reserved') return
     setCountdown(180)
@@ -100,7 +109,7 @@ export default function DropDetail() {
     <div style={{ paddingTop: '52px', minHeight: '100vh' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
 
-        {/* Left: Product Info */}
+        {/* Left */}
         <div className="fade-in">
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--gray-light)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>
             {sneaker.brand}
@@ -108,24 +117,21 @@ export default function DropDetail() {
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 5vw, 56px)', lineHeight: 0.95, marginBottom: '24px' }}>
             {sneaker.name}
           </h1>
-
-          {/* Product visual */}
           <div style={{
             height: '300px', background: '#111', borderRadius: '4px', border: '1px solid #1a1a1a',
             display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '32px',
           }}>
             <span style={{ fontSize: '96px' }}>👟</span>
           </div>
-
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: 'var(--white)' }}>
             ₩{sneaker.price?.toLocaleString()}
           </div>
         </div>
 
-        {/* Right: Order Panel */}
+        {/* Right */}
         <div className="fade-in" style={{ position: 'sticky', top: '72px' }}>
 
-          {/* Live stock indicator */}
+          {/* 실시간 재고 */}
           <div style={{
             padding: '16px 20px', background: '#111', border: '1px solid #1a1a1a',
             borderRadius: '4px', marginBottom: '32px',
@@ -140,7 +146,7 @@ export default function DropDetail() {
             </span>
           </div>
 
-          {/* Size selector */}
+          {/* 사이즈 선택 */}
           <div style={{ marginBottom: '32px' }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--gray-light)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>
               Select Size (mm)
@@ -167,18 +173,19 @@ export default function DropDetail() {
                   >
                     {size}
                     {!isOut && (
-                      <span style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '8px', color: isSelected ? 'var(--gray-mid)' : 'var(--gray-mid)', fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '8px', color: 'var(--gray-mid)', fontFamily: 'var(--font-mono)' }}>
                         {sizeStock}
                       </span>
                     )}
-                    {isOut && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>✕</span>}
+                    {isOut && (
+                      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
+                    )}
                   </button>
                 )
               })}
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div style={{
               padding: '12px 16px', background: 'rgba(230,51,41,0.1)', border: '1px solid rgba(230,51,41,0.3)',
@@ -189,7 +196,6 @@ export default function DropDetail() {
             </div>
           )}
 
-          {/* Reserve phase UI */}
           {phase === 'reserved' && (
             <div style={{
               padding: '20px', background: 'rgba(230,51,41,0.06)', border: '1px solid rgba(230,51,41,0.2)',
@@ -204,14 +210,13 @@ export default function DropDetail() {
             </div>
           )}
 
-          {/* Action button */}
           {phase === 'idle' && (
             <button onClick={handleReserve} style={{
               width: '100%', padding: '18px', background: 'var(--red)', color: 'var(--white)',
               fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase',
               borderRadius: '2px', transition: 'background 0.2s',
             }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--red-dark)'}
+              onMouseEnter={e => e.currentTarget.style.background = '#c0392b'}
               onMouseLeave={e => e.currentTarget.style.background = 'var(--red)'}
             >
               Reserve Now →
@@ -233,7 +238,7 @@ export default function DropDetail() {
             <button onClick={handleConfirm} style={{
               width: '100%', padding: '18px', background: 'var(--white)', color: 'var(--black)',
               fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase',
-              borderRadius: '2px', transition: 'opacity 0.2s',
+              borderRadius: '2px',
             }}>
               Confirm Order →
             </button>
