@@ -3,6 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../api'
 import { useAuthStore } from '../store/auth'
 
+// 422 detail 배열 또는 문자열 파싱
+function parseError(res) {
+  if (!res) return '오류가 발생했습니다.'
+  // FastAPI 422: detail이 배열인 경우
+  if (Array.isArray(res.detail)) {
+    return res.detail.map(d => d.msg.replace('Value error, ', '')).join(' / ')
+  }
+  // 문자열인 경우
+  if (typeof res.detail === 'string') return res.detail
+  return '오류가 발생했습니다.'
+}
+
 export default function Login() {
   const navigate = useNavigate()
   const { setToken, setUser } = useAuthStore()
@@ -13,6 +25,15 @@ export default function Login() {
 
   const handleSubmit = async () => {
     setError('')
+
+    // 클라이언트 사전 검증
+    if (mode === 'signup') {
+      if (!form.name.trim()) { setError('이름을 입력해주세요.'); return }
+      if (form.password.length < 8) { setError('비밀번호는 8자 이상이어야 합니다.'); return }
+    }
+    if (!form.email.trim()) { setError('이메일을 입력해주세요.'); return }
+    if (!form.password.trim()) { setError('비밀번호를 입력해주세요.'); return }
+
     setLoading(true)
     try {
       if (mode === 'login') {
@@ -23,20 +44,22 @@ export default function Login() {
           setUser(me)
           navigate('/')
         } else {
-          setError(res.detail || '로그인에 실패했습니다.')
+          setError(parseError(res))
         }
       } else {
         const res = await authAPI.signup({ email: form.email, password: form.password, name: form.name })
         if (res.id) {
           const loginRes = await authAPI.login({ email: form.email, password: form.password })
           setToken(loginRes.access_token)
+          const me = await authAPI.me(loginRes.access_token)
+          setUser(me)
           navigate('/')
         } else {
-          setError(res.detail || '회원가입에 실패했습니다.')
+          setError(parseError(res))
         }
       }
     } catch (e) {
-      setError('네트워크 오류가 발생했습니다.')
+      setError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
     }
     setLoading(false)
   }
@@ -70,14 +93,28 @@ export default function Login() {
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             style={inputStyle}
           />
-          <input
-            placeholder="Password"
-            type="password"
-            value={form.password}
-            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            style={inputStyle}
-          />
+          <div>
+            <input
+              placeholder="Password"
+              type="password"
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              style={inputStyle}
+            />
+            {mode === 'signup' && (
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: '10px',
+                color: form.password.length > 0 && form.password.length < 8
+                  ? 'var(--red)' : 'var(--gray-mid)',
+                marginTop: '6px', paddingLeft: '2px',
+              }}>
+                {form.password.length > 0 && form.password.length < 8
+                  ? `${8 - form.password.length}자 더 입력해주세요`
+                  : '8자 이상 입력해주세요'}
+              </div>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -97,16 +134,25 @@ export default function Login() {
           borderRadius: '2px', transition: 'background 0.2s',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         }}>
-          {loading && <div style={{ width: '12px', height: '12px', border: '2px solid #555', borderTopColor: 'var(--white)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />}
+          {loading && (
+            <div style={{
+              width: '12px', height: '12px',
+              border: '2px solid #555', borderTopColor: 'var(--white)',
+              borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+            }} />
+          )}
           {mode === 'login' ? 'Sign In' : 'Create Account'}
         </button>
 
-        <button onClick={() => { setMode(m => m === 'login' ? 'signup' : 'login'); setError('') }} style={{
-          width: '100%', padding: '12px',
-          fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--gray-light)',
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          border: '1px solid #222', borderRadius: '2px',
-        }}>
+        <button
+          onClick={() => { setMode(m => m === 'login' ? 'signup' : 'login'); setError('') }}
+          style={{
+            width: '100%', padding: '12px',
+            fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--gray-light)',
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+            border: '1px solid #222', borderRadius: '2px',
+          }}
+        >
           {mode === 'login' ? 'Create Account →' : '← Back to Login'}
         </button>
       </div>
