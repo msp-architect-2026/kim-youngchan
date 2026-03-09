@@ -53,7 +53,7 @@ redis:
 authService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-auth"
-  imageTag: "b0a7e07f"
+  imageTag: "fb4c0f73"
   replicas: 1
   resources:
     requests:
@@ -67,7 +67,7 @@ authService:
 productService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-product"
-  imageTag: "4cb21a27"
+  imageTag: "fb4c0f73"
   replicas: 1
   resources:
     requests:
@@ -81,7 +81,7 @@ productService:
 orderService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-order"
-  imageTag: "e1562f3f"
+  imageTag: "fb4c0f73"
   replicas: 1
   resources:
     requests:
@@ -95,7 +95,7 @@ orderService:
 frontendService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-frontend"
-  imageTag: "5357f3a0"
+  imageTag: "fb4c0f73"
   resources:
     requests:
       cpu: "50m"
