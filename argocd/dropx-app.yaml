@@ -3,24 +3,6 @@ kind: Application
 metadata:
   name: dropx
   namespace: argocd
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: >-
-      auth=192.168.10.100:5050/root/ci/dropx-auth:latest,
-      product=192.168.10.100:5050/root/ci/dropx-product:latest,
-      order=192.168.10.100:5050/root/ci/dropx-order:latest,
-      frontend=192.168.10.100:5050/root/ci/dropx-frontend:latest
-    argocd-image-updater.argoproj.io/auth.update-strategy: latest
-    argocd-image-updater.argoproj.io/product.update-strategy: latest
-    argocd-image-updater.argoproj.io/order.update-strategy: latest
-    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
-    argocd-image-updater.argoproj.io/auth.helm.image-name: authService.image
-    argocd-image-updater.argoproj.io/auth.helm.image-tag: authService.imageTag
-    argocd-image-updater.argoproj.io/product.helm.image-name: productService.image
-    argocd-image-updater.argoproj.io/product.helm.image-tag: productService.imageTag
-    argocd-image-updater.argoproj.io/order.helm.image-name: orderService.image
-    argocd-image-updater.argoproj.io/order.helm.image-tag: orderService.imageTag
-    argocd-image-updater.argoproj.io/frontend.helm.image-name: frontendService.image
-    argocd-image-updater.argoproj.io/frontend.helm.image-tag: frontendService.imageTag
 spec:
   project: default
   source:
