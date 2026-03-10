@@ -67,7 +67,7 @@ authService:
 productService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-product"
-  imageTag: "fb4c0f73"
+  imageTag: "97cb286c"
   replicas: 1
   resources:
     requests:
