@@ -143,7 +143,7 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      slack_api_url: 'YOUR_SLACK_WEBHOOK_URL_HERE'  # 여기에 Slack Webhook URL 입력
+      slack_api_url: 'https://hooks.slack.com/services/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'
     
     route:
       group_by: ['alertname', 'cluster', 'service']
