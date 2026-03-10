@@ -109,6 +109,21 @@ async def confirm_order(
         order_confirm_total.labels(status="unauthorized").inc()
         raise HTTPException(status_code=403, detail="본인의 선점 토큰이 아닙니다.")
 
+    lock_key = f"order:lock:{sneaker_id}:{user_id}"
+
+    async with db_conn.cursor() as check_cursor:
+        await check_cursor.execute(
+            "SELECT id FROM orders WHERE user_id=%s AND sneaker_id=%s AND size=%s LIMIT 1",
+            (user_id, sneaker_id, size_key)
+        )
+        if await check_cursor.fetchone():
+            await redis.delete(token_key, lock_key)
+            order_confirm_total.labels(status="duplicate").inc()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 구매한 상품입니다."
+            )
+
     try:
         await db_conn.begin()
         async with db_conn.cursor() as cursor:
@@ -137,7 +152,6 @@ async def confirm_order(
         order_confirm_total.labels(status="error").inc()
         raise HTTPException(status_code=500, detail="주문 확정 중 오류가 발생했습니다.")
 
-    lock_key = f"order:lock:{sneaker_id}:{user_id}"
     await redis.delete(token_key, lock_key)
     await redis.incr("metrics:drop:confirmed")
 
