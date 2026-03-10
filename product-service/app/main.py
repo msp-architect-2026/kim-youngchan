@@ -9,8 +9,8 @@ from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, REGISTRY
 
 from app.core.config import settings
-from app.core.database import init_db, close_db, check_db_health
-from app.core.redis_client import init_redis, close_redis, check_redis_health
+from app.core.database import init_db, close_db
+from app.core.redis_client import init_redis, close_redis
 from app.api.product import router as product_router
 from app.schemas.product import HealthCheckResponse, ErrorResponse
 
@@ -93,13 +93,13 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info("=" * 60)
-    
+
     logger.info("Configuration:")
     logger.info(f"  Database: {settings.db_host}:{settings.db_port}/{settings.db_name}")
     logger.info(f"  DB Pool: pool_size={settings.db_pool_size}, max_overflow={settings.db_max_overflow}")
     logger.info(f"  Redis: {settings.redis_host}:{settings.redis_port}/{settings.redis_db}")
     logger.info(f"  Redis Pool: max_connections={settings.redis_max_connections}")
-    
+
     try:
         await init_db()
         await init_redis()
@@ -107,13 +107,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Failed to initialize connections: {e}")
         raise
-    
+
     logger.info("=" * 60)
     logger.info(f"{settings.app_name} is ready")
     logger.info("=" * 60)
-    
+
     yield
-    
+
     logger.info("Shutting down...")
     await close_db()
     await close_redis()
@@ -142,19 +142,19 @@ async def metrics_middleware(request, call_next):
     """Middleware to track request metrics"""
     method = request.method
     path = request.url.path
-    
+
     ACTIVE_REQUESTS.inc()
-    
+
     try:
         with REQUEST_DURATION.labels(method=method, endpoint=path).time():
             response = await call_next(request)
-        
+
         REQUEST_COUNT.labels(
             method=method,
             endpoint=path,
             status=response.status_code
         ).inc()
-        
+
         return response
     finally:
         ACTIVE_REQUESTS.dec()
@@ -169,19 +169,26 @@ app.include_router(product_router)
 # Endpoints
 # ============================================================================
 
-@app.get(
-    "/health",
-    response_model=HealthCheckResponse,
-    tags=["Monitoring"]
-)
+@app.get("/health", tags=["Monitoring"])
 async def health_check():
-    """Health check endpoint for Kubernetes probes"""
+    """Liveness probe — always returns 200 if process is alive"""
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"status": "ok"}
+    )
+
+@app.get("/health/ready", response_model=HealthCheckResponse, tags=["Monitoring"])
+async def readiness_check():
+    """Readiness probe — checks DB and Redis connectivity"""
+    from app.core.database import check_db_health
+    from app.core.redis_client import check_redis_health
+
     db_healthy = await check_db_health()
     redis_healthy = await check_redis_health()
-    
+
     overall_healthy = db_healthy and redis_healthy
     status_code = status.HTTP_200_OK if overall_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
-    
+
     return JSONResponse(
         status_code=status_code,
         content=HealthCheckResponse(
@@ -208,7 +215,7 @@ async def root():
 async def general_exception_handler(request, exc: Exception):
     """General exception handler"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=ErrorResponse(
@@ -221,4 +228,4 @@ async def general_exception_handler(request, exc: Exception):
 # Metrics App for Port 8001 (used by start.sh)
 # ============================================================================
 
-metrics_app = make_asgi_app(registry=REGISTRY)  # ⚠️ 이 한 줄만 추가!
+metrics_app = make_asgi_app(registry=REGISTRY)
