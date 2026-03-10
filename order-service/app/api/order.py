@@ -141,8 +141,17 @@ async def confirm_order(
 
     except Exception as e:
         await db_conn.rollback()
-        logger.error(f"Confirm transaction failed: {e}")
 
+        error_str = str(e)
+        if "Duplicate entry" in error_str and "uk_user_product_size" in error_str:
+            await redis.delete(token_key, lock_key)
+            order_confirm_total.labels(status="duplicate").inc()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 구매한 상품입니다."
+            )
+
+        logger.error(f"Confirm transaction failed: {e}")
         stock_key = f"stock:{sneaker_id}:{size_key}"
         try:
             await redis.evalsha(redis_client.rollback_sha, 1, stock_key, "1")
