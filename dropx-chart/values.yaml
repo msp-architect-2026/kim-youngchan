@@ -53,7 +53,7 @@ redis:
 authService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-auth"
-  imageTag: "fb4c0f73"
+  imageTag: "156ffacf"
   replicas: 1
   resources:
     requests:
