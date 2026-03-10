@@ -81,7 +81,7 @@ productService:
 orderService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-order"
-  imageTag: "992f2676"
+  imageTag: "281366f8"
   replicas: 1
   resources:
     requests:
