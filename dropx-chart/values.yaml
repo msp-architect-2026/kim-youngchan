@@ -5,7 +5,7 @@
 # ── 글로벌 ─────────────────────────────────────────────────────────────────
 global:
   namespace: dropx
-  registry: "192.168.10.100:5050"          # GitLab Container Registry IP
+  registry: "192.168.10.100:5050"
   imagePullPolicy: Always
   imagePullSecret: "gitlab-registry-secret"
 
