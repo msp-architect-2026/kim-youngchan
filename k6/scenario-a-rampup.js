@@ -20,6 +20,7 @@ const BASE  = 'http://192.168.10.231'
 const SIZES = [255, 260, 265, 270, 275, 280]
 
 export const options = {
+  setupTimeout: '3m',
   scenarios: {
     load_100: {
       executor: 'ramping-vus',
@@ -41,13 +42,10 @@ export const options = {
 
 export function setup() {
   const tokens = []
+  // 유저는 사전에 생성됨 — login만 실행
   for (let i = 0; i < 100; i++) {
-    const email = `rampup_${i}@dropx.local`
+    const email = `rampup_${i}@gmail.com`
     const pw    = 'Test1234!'
-    http.post(`${BASE}/api/auth/signup`,
-      JSON.stringify({ email, password: pw, name: `RampUser${i}` }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
     const r = http.post(`${BASE}/api/auth/login`,
       JSON.stringify({ email, password: pw }),
       { headers: { 'Content-Type': 'application/json' } }

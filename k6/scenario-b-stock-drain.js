@@ -44,7 +44,7 @@ export const options = {
 export function setup() {
   const tokens = []
   for (let i = 0; i < 200; i++) {
-    const email = `drain_${i}@dropx.local`
+    const email = `drain_${i}@gmail.com`
     const pw    = 'Test1234!'
     http.post(`${BASE}/api/auth/signup`,
       JSON.stringify({ email, password: pw, name: `DrainUser${i}` }),

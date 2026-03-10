@@ -7,7 +7,7 @@
  * Pod Kill 실행 (별도 터미널):
  *   ADMIN_TOKEN=$(curl -s -X POST http://192.168.10.231/api/auth/login \
  *     -H "Content-Type: application/json" \
- *     -d '{"email":"admin@dropx.local","password":"admin1234!"}' \
+ *     -d '{"email":"admin@gmail.com","password":"admin1234!"}' \
  *     | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
  *   curl -s -X POST http://192.168.10.231/api/admin/kill-pod \
  *     -H "Authorization: Bearer $ADMIN_TOKEN"
@@ -53,7 +53,7 @@ export const options = {
 export function setup() {
   const tokens = []
   for (let i = 0; i < 500; i++) {
-    const email = `chaos_${i}@dropx.local`
+    const email = `chaos_${i}@gmail.com`
     const pw    = 'Test1234!'
     http.post(`${BASE}/api/auth/signup`,
       JSON.stringify({ email, password: pw, name: `ChaosUser${i}` }),

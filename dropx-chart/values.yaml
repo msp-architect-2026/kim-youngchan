@@ -29,11 +29,11 @@ mysql:
   storageClass: "local-path"
   resources:
     requests:
-      cpu: "250m"
-      memory: "512Mi"
+      cpu: "500m"
+      memory: "768Mi"
     limits:
-      cpu: "800m"
-      memory: "1Gi"
+      cpu: "1500m"
+      memory: "1536Mi"
 
 # ── Redis ───────────────────────────────────────────────────────────────────
 redis:
@@ -43,7 +43,7 @@ redis:
   maxmemory: "400mb"
   resources:
     requests:
-      cpu: "100m"
+      cpu: "200m"
       memory: "256Mi"
     limits:
       cpu: "500m"
@@ -57,11 +57,11 @@ authService:
   replicas: 1
   resources:
     requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "400m"
+      cpu: "200m"
       memory: "256Mi"
+    limits:
+      cpu: "800m"
+      memory: "512Mi"
 
 # ── Product Service ─────────────────────────────────────────────────────────
 productService:
@@ -71,11 +71,11 @@ productService:
   replicas: 1
   resources:
     requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "400m"
+      cpu: "200m"
       memory: "256Mi"
+    limits:
+      cpu: "800m"
+      memory: "512Mi"
 
 # ── Order Service ───────────────────────────────────────────────────────────
 orderService:
@@ -85,11 +85,11 @@ orderService:
   replicas: 1
   resources:
     requests:
-      cpu: "200m"
-      memory: "256Mi"
+      cpu: "300m"
+      memory: "384Mi"
     limits:
-      cpu: "800m"
-      memory: "512Mi"
+      cpu: "1000m"
+      memory: "768Mi"
 
 # ── Frontend Service ────────────────────────────────────────────────────────
 frontendService:
@@ -123,4 +123,3 @@ ingress:
   proxyReadTimeout: "60"
   proxySendTimeout: "60"
   proxyConnectTimeout: "10"
-  
