@@ -9,6 +9,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.proxySendTimeout | quote }}
     nginx.ingress.kubernetes.io/proxy-connect-timeout: {{ .Values.ingress.proxyConnectTimeout | quote }}
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_503"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
