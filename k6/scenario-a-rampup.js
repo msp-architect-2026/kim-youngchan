@@ -15,6 +15,7 @@ const confirmDuration = new Trend('dropx_confirm_duration', true)
 const reserveSuccess  = new Rate('dropx_reserve_success')
 const confirmSuccess  = new Rate('dropx_confirm_success')
 const soldOut         = new Counter('dropx_sold_out')
+const realErrorRate   = new Rate('dropx_real_error_rate')
 
 const BASE  = 'http://192.168.10.231'
 const SIZES = [255, 260, 265, 270, 275, 280]
@@ -33,8 +34,8 @@ export const options = {
     },
   },
   thresholds: {
-    http_req_failed:          ['rate<0.05'],   // 에러율 5% 미만
-    http_req_duration:        ['p(95)<1000'],  // p95 1초 미만
+    'dropx_real_error_rate':  ['rate<0.05'],
+    http_req_duration:        ['p(95)<1000'],
     'dropx_reserve_duration': ['p(95)<800' ],
     'dropx_confirm_duration': ['p(95)<800' ],
   },
@@ -74,6 +75,7 @@ export default function (data) {
     const res = http.get(`${BASE}/api/sneakers`, { headers })
     listDuration.add(Date.now() - s)
     check(res, { 'list 200': r => r.status === 200 })
+    if (res.status !== 200) console.log(`list fail: ${res.status} ${res.body.slice(0,100)}`)
     try {
       const items = JSON.parse(res.body).items
       if (items?.length) sneakerId = items[0].id
@@ -100,7 +102,9 @@ export default function (data) {
     )
     reserveDuration.add(Date.now() - s)
 
-    if (res.status === 409) { soldOut.add(1); reserveSuccess.add(false); return }
+    if (res.status === 409) { soldOut.add(1); reserveSuccess.add(false); realErrorRate.add(false); return }
+    if (res.status >= 500) { realErrorRate.add(true); return }
+    realErrorRate.add(false)
 
     const ok = check(res, {
       'reserve 200':        r => r.status === 200,

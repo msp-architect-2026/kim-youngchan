@@ -71,10 +71,10 @@ productService:
   replicas: 1
   resources:
     requests:
-      cpu: "200m"
+      cpu: "300m"
       memory: "256Mi"
     limits:
-      cpu: "800m"
+      cpu: "1000m"
       memory: "512Mi"
 
 # ── Order Service ───────────────────────────────────────────────────────────
@@ -85,10 +85,10 @@ orderService:
   replicas: 1
   resources:
     requests:
-      cpu: "300m"
+      cpu: "400m"
       memory: "384Mi"
     limits:
-      cpu: "1000m"
+      cpu: "1200m"
       memory: "768Mi"
 
 # ── Frontend Service ────────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ hpa:
   maxReplicas: 5
   cpuUtilization: 60
   auth:
-    maxReplicas: 5
+    maxReplicas: 3
   product:
     maxReplicas: 5
   order:
@@ -120,6 +120,6 @@ hpa:
 ingress:
   host: "dropx.local"
   className: "nginx"
-  proxyReadTimeout: "60"
-  proxySendTimeout: "60"
+  proxyReadTimeout: "120"
+  proxySendTimeout: "120"
   proxyConnectTimeout: "10"
