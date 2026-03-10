@@ -7,6 +7,7 @@
 import http from 'k6/http'
 import { check, sleep, group } from 'k6'
 import { Trend, Rate, Counter } from 'k6/metrics'
+import { SharedArray } from 'k6/data'
 
 const listDuration    = new Trend('dropx_list_duration',    true)
 const detailDuration  = new Trend('dropx_detail_duration',  true)
@@ -17,19 +18,22 @@ const confirmSuccess  = new Rate('dropx_confirm_success')
 const soldOut         = new Counter('dropx_sold_out')
 const realErrorRate   = new Rate('dropx_real_error_rate')
 
+const tokens = new SharedArray('tokens', function () {
+  return JSON.parse(open('./tokens-rampup.json'))
+})
+
 const BASE  = 'http://192.168.10.231'
 const SIZES = [255, 260, 265, 270, 275, 280]
 
 export const options = {
-  setupTimeout: '3m',
   scenarios: {
     load_100: {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '10s', target: 100 },  // ramp up
-        { duration: '30s', target: 100 },  // steady
-        { duration: '10s', target: 0   },  // ramp down
+        { duration: '10s', target: 100 },
+        { duration: '30s', target: 100 },
+        { duration: '10s', target: 0   },
       ],
     },
   },
@@ -41,27 +45,8 @@ export const options = {
   },
 }
 
-export function setup() {
-  const tokens = []
-  // 유저는 사전에 생성됨 — login만 실행
-  for (let i = 0; i < 100; i++) {
-    const email = `rampup_${i}@gmail.com`
-    const pw    = 'Test1234!'
-    const r = http.post(`${BASE}/api/auth/login`,
-      JSON.stringify({ email, password: pw }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    try {
-      const b = JSON.parse(r.body)
-      if (b.access_token) tokens.push(b.access_token)
-    } catch (_) {}
-  }
-  console.log(`✅ [rampup] tokens: ${tokens.length}`)
-  return { tokens }
-}
-
-export default function (data) {
-  const token   = data.tokens[__VU % data.tokens.length]
+export default function () {
+  const token   = tokens[__VU % tokens.length]
   const size    = SIZES[Math.floor(Math.random() * SIZES.length)]
   const headers = {
     'Content-Type': 'application/json',
@@ -125,6 +110,11 @@ export default function (data) {
       { headers }
     )
     confirmDuration.add(Date.now() - s)
+
+    if (res.status === 409) { confirmSuccess.add(false); return }
+    if (res.status >= 500) { realErrorRate.add(true); return }
+    realErrorRate.add(false)
+
     const ok = check(res, {
       'confirm 200':   r => r.status === 200,
       'order_id 존재': r => { try { return !!JSON.parse(r.body).order_id } catch { return false } },

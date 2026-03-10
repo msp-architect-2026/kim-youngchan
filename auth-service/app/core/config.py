@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # JWT
     jwt_secret_key: str = "CHANGE_ME_IN_PRODUCTION_USE_256BIT_SECRET"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+    access_token_expire_minutes: int = 43200
 
     # MySQL
     mysql_host: str = "mysql"
