@@ -109,6 +109,12 @@ hpa:
   minReplicas: 1
   maxReplicas: 5
   cpuUtilization: 60
+  auth:
+    maxReplicas: 5
+  product:
+    maxReplicas: 5
+  order:
+    maxReplicas: 5
 
 # ── Ingress ─────────────────────────────────────────────────────────────────
 ingress:
