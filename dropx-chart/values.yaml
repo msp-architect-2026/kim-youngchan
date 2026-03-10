@@ -108,7 +108,7 @@ frontendService:
 hpa:
   minReplicas: 1
   maxReplicas: 5
-  cpuUtilization: 60
+  cpuUtilization: 80
   auth:
     maxReplicas: 3
   product:
