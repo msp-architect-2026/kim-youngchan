@@ -54,7 +54,7 @@ authService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-auth"
   imageTag: "fb4c0f73"
-  replicas: 1
+  replicas: 2
   resources:
     requests:
       cpu: "200m"
@@ -68,7 +68,7 @@ productService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-product"
   imageTag: "be04f841"
-  replicas: 2
+  replicas: 3
   resources:
     requests:
       cpu: "300m"
@@ -82,7 +82,7 @@ orderService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-order"
   imageTag: "281366f8"
-  replicas: 1
+  replicas: 3
   resources:
     requests:
       cpu: "400m"
