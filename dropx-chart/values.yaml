@@ -88,7 +88,7 @@ orderService:
       cpu: "400m"
       memory: "384Mi"
     limits:
-      cpu: "1200m"
+      cpu: "2000m"
       memory: "768Mi"
 
 # ── Frontend Service ────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@
 import http from 'k6/http'
 import { check, sleep, group } from 'k6'
 import { Trend, Rate, Counter } from 'k6/metrics'
+import { SharedArray } from 'k6/data'
 
 const listDuration    = new Trend('dropx_list_duration',    true)
 const detailDuration  = new Trend('dropx_detail_duration',  true)
@@ -19,52 +20,33 @@ const soldOut         = new Counter('dropx_sold_out')
 const BASE  = 'http://192.168.10.231'
 const SIZES = [255, 260, 265, 270, 275, 280]
 
+const tokens = new SharedArray('tokens', function () {
+  return JSON.parse(open('./tokens-rampup.json'))
+})
+
 export const options = {
   scenarios: {
     stock_drain: {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '15s', target: 1000 },  // ramp up
-        { duration: '30s', target: 1000 },  // steady — 재고 소진 구간
-        { duration: '10s', target: 0    },  // ramp down
+        { duration: '15s', target: 1000 },
+        { duration: '30s', target: 1000 },
+        { duration: '10s', target: 0    },
       ],
     },
   },
   thresholds: {
-    http_req_failed:          ['rate<0.1'  ],  // 에러율 10% 미만
-    http_req_duration:        ['p(95)<2000'],  // p95 2초 미만
+    http_req_failed:          ['rate<0.1'  ],
+    http_req_duration:        ['p(95)<2000'],
     'dropx_reserve_duration': ['p(95)<1500'],
     'dropx_confirm_duration': ['p(95)<1500'],
-    // 재고 100개 → 정확히 100개만 성공해야 함 (초과 선점 없음)
     'dropx_reserve_success':  ['rate>0.01' ],
   },
 }
 
-export function setup() {
-  const tokens = []
-  for (let i = 0; i < 200; i++) {
-    const email = `drain_${i}@gmail.com`
-    const pw    = 'Test1234!'
-    http.post(`${BASE}/api/auth/signup`,
-      JSON.stringify({ email, password: pw, name: `DrainUser${i}` }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    const r = http.post(`${BASE}/api/auth/login`,
-      JSON.stringify({ email, password: pw }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    try {
-      const b = JSON.parse(r.body)
-      if (b.access_token) tokens.push(b.access_token)
-    } catch (_) {}
-  }
-  console.log(`✅ [stock-drain] tokens: ${tokens.length}`)
-  return { tokens }
-}
-
-export default function (data) {
-  const token   = data.tokens[__VU % data.tokens.length]
+export default function () {
+  const token   = tokens[__VU % tokens.length]
   const size    = SIZES[Math.floor(Math.random() * SIZES.length)]
   const headers = {
     'Content-Type': 'application/json',
@@ -104,7 +86,6 @@ export default function (data) {
     )
     reserveDuration.add(Date.now() - s)
 
-    // 409 = 재고 소진 (정상 동작)
     if (res.status === 409) {
       soldOut.add(1)
       reserveSuccess.add(false)
