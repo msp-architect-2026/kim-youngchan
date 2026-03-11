@@ -53,7 +53,7 @@ redis:
 authService:
   enabled: true
   image: "192.168.10.100:5050/root/ci/dropx-auth"
-  imageTag: "156ffacf"
+  imageTag: "fb4c0f73"
   replicas: 1
   resources:
     requests:
@@ -118,8 +118,13 @@ hpa:
 
 # ── Ingress ─────────────────────────────────────────────────────────────────
 ingress:
-  host: "dropx.local"
   className: "nginx"
   proxyReadTimeout: "120"
   proxySendTimeout: "120"
   proxyConnectTimeout: "10"
+  proxyBuffering: "on"
+  proxyBufferSize: "16k"
+  proxyBuffers: "8 16k"
+  keepaliveRequests: "1000"
+  keepaliveTimeout: "60"
+  upstreamKeepalive: "100"
