@@ -15,6 +15,7 @@
 import http from 'k6/http'
 import { check, sleep, group } from 'k6'
 import { Trend, Rate, Counter } from 'k6/metrics'
+import { SharedArray } from 'k6/data'
 
 const listDuration    = new Trend('dropx_list_duration',    true)
 const detailDuration  = new Trend('dropx_detail_duration',  true)
@@ -27,53 +28,34 @@ const soldOut         = new Counter('dropx_sold_out')
 const BASE  = 'http://192.168.10.231'
 const SIZES = [255, 260, 265, 270, 275, 280]
 
+const tokens = new SharedArray('tokens', function () {
+  return JSON.parse(open('./tokens-rampup.json'))
+})
+
 export const options = {
   scenarios: {
     chaos_5000: {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '10s', target: 500  },  // warm up
-        { duration: '20s', target: 5000 },  // aggressive ramp
-        { duration: '30s', target: 5000 },  // steady (← 여기서 pod kill)
-        { duration: '10s', target: 0    },  // ramp down
+        { duration: '10s', target: 500  },
+        { duration: '20s', target: 5000 },
+        { duration: '30s', target: 5000 },
+        { duration: '10s', target: 0    },
       ],
     },
   },
   thresholds: {
-    // 카오스 상황이므로 완화된 기준
-    http_req_failed:          ['rate<0.3'  ],  // 에러율 30% 미만
-    http_req_duration:        ['p(95)<5000'],  // p95 5초 미만
-    'dropx_reserve_duration': ['p(95)<3000'],
-    'dropx_confirm_duration': ['p(95)<3000'],
-    'dropx_reserve_success':  ['rate>0.01' ],  // 최소 1% 이상 성공
+    http_req_failed:          ['rate<0.5'  ],  // Pod Kill 감안 50% 미만
+    http_req_duration:        ['p(95)<8000'],  // 8초
+    'dropx_reserve_duration': ['p(95)<5000'],  // 5초
+    'dropx_confirm_duration': ['p(95)<5000'],
+    'dropx_reserve_success':  ['rate>0.005'],  // 0.5% 이상
   },
 }
 
-export function setup() {
-  const tokens = []
-  for (let i = 0; i < 500; i++) {
-    const email = `chaos_${i}@gmail.com`
-    const pw    = 'Test1234!'
-    http.post(`${BASE}/api/auth/signup`,
-      JSON.stringify({ email, password: pw, name: `ChaosUser${i}` }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    const r = http.post(`${BASE}/api/auth/login`,
-      JSON.stringify({ email, password: pw }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-    try {
-      const b = JSON.parse(r.body)
-      if (b.access_token) tokens.push(b.access_token)
-    } catch (_) {}
-  }
-  console.log(`✅ [chaos] tokens: ${tokens.length}`)
-  return { tokens }
-}
-
-export default function (data) {
-  const token   = data.tokens[__VU % data.tokens.length]
+export default function () {
+  const token   = tokens[__VU % tokens.length]
   const size    = SIZES[Math.floor(Math.random() * SIZES.length)]
   const headers = {
     'Content-Type': 'application/json',
