@@ -194,26 +194,47 @@ class ProductService:
     
     async def get_sneaker_detail(self, sneaker_id: int) -> Optional[SneakerDetailSchema]:
         """Get detailed sneaker with real-time stock from Redis"""
+        # 1. Redis detail 캐시 확인
+        try:
+            cache_key = RedisKeyBuilder.sneaker_detail_key(sneaker_id)
+            cached = await self.redis.get(cache_key)
+            if cached:
+                logger.info(f"Cache HIT: sneaker detail {sneaker_id}")
+                return SneakerDetailSchema(**json.loads(cached))
+        except (RedisError, ConnectionError, TimeoutError):
+            pass
+
+        # 2. Cache MISS → DB 조회
         query = select(Sneakers).where(Sneakers.id == sneaker_id)
         result = await self.db.execute(query)
         sneaker = result.scalar_one_or_none()
-        
+
         if not sneaker:
             return None
-        
-        # Get real-time stock
+
         size_stocks = await self.get_stock_from_redis(sneaker_id)
-        
-        # Fallback to DB stock
         if size_stocks is None:
             logger.warning(f"Using DB stock for sneaker_id={sneaker_id}")
             size_stocks = [
                 SizeStockSchema(size=s.size, stock=s.stock)
                 for s in sneaker.sizes
             ]
-        
+
         detail = SneakerDetailSchema.model_validate(sneaker)
         detail.sizes = size_stocks
+
+        # 3. Redis에 캐시 저장
+        try:
+            cache_key = RedisKeyBuilder.sneaker_detail_key(sneaker_id)
+            await self.redis.setex(
+                cache_key,
+                settings.cache_ttl,
+                json.dumps(detail.model_dump(mode='json'))
+            )
+            logger.info(f"Cache SET: sneaker detail {sneaker_id}")
+        except (RedisError, ConnectionError, TimeoutError):
+            pass
+
         return detail
     
     async def get_live_stock(self, sneaker_id: int) -> Optional[LiveStockResponse]:

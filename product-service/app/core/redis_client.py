@@ -91,3 +91,7 @@ class RedisKeyBuilder:
     def sneaker_list_key() -> str:
         """Generate sneaker list cache key"""
         return "sneakers:list:active"
+    
+    @staticmethod
+    def sneaker_detail_key(sneaker_id: int) -> str:
+        return f"sneaker:detail:{sneaker_id}"
