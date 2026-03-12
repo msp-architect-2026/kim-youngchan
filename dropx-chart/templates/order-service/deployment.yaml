@@ -144,14 +144,12 @@ metadata:
     app: order-service
     app.kubernetes.io/part-of: dropx
 spec:
-  type: NodePort
   selector:
     app: order-service
   ports:
     - name: http
       port: 80
       targetPort: 8000
-      nodePort: 30800
     - name: metrics
       port: 8001
       targetPort: 8001
