@@ -21,4 +21,4 @@ asyncio.run(run_metrics())
 sleep 2
 
 # Start main app on port 8000 (foreground)
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4

@@ -17,7 +17,8 @@ const reserveSuccess  = new Rate('dropx_reserve_success')
 const confirmSuccess  = new Rate('dropx_confirm_success')
 const soldOut         = new Counter('dropx_sold_out')
 
-const BASE  = 'http://192.168.10.231'
+const BASE_PRODUCT = 'http://192.168.10.99:30801'
+const BASE_ORDER   = 'http://192.168.10.99:30800'
 const SIZES = [255, 260, 265, 270, 275, 280]
 
 const tokens = new SharedArray('tokens', function () {
@@ -57,7 +58,7 @@ export default function () {
 
   group('1_list', () => {
     const s   = Date.now()
-    const res = http.get(`${BASE}/api/sneakers`, { headers })
+    const res = http.get(`${BASE_PRODUCT}/api/sneakers`, { headers })
     listDuration.add(Date.now() - s)
     check(res, { 'list 200': r => r.status === 200 })
     try {
@@ -70,7 +71,7 @@ export default function () {
 
   group('2_detail', () => {
     const s   = Date.now()
-    const res = http.get(`${BASE}/api/sneakers/${sneakerId}`, { headers })
+    const res = http.get(`${BASE_PRODUCT}/api/sneakers/${sneakerId}`, { headers })
     detailDuration.add(Date.now() - s)
     check(res, { 'detail 200': r => r.status === 200 })
   })
@@ -80,7 +81,7 @@ export default function () {
   let reserveToken = null
   group('3_reserve', () => {
     const s   = Date.now()
-    const res = http.post(`${BASE}/api/orders/reserve`,
+    const res = http.post(`${BASE_ORDER}/api/orders/reserve`,
       JSON.stringify({ sneaker_id: sneakerId, size }),
       { headers }
     )
@@ -106,7 +107,7 @@ export default function () {
 
   group('4_confirm', () => {
     const s   = Date.now()
-    const res = http.post(`${BASE}/api/orders/confirm`,
+    const res = http.post(`${BASE_ORDER}/api/orders/confirm`,
       JSON.stringify({ reserve_token: reserveToken }),
       { headers }
     )
