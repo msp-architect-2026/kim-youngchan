@@ -83,27 +83,24 @@
 ### 📖 Wiki 전체 문서
 | 분류 | 문서 명칭 | 설명 |
 | :--- | :--- | :--- |
-| **🏠 Wiki Home** | [Wiki 메인 페이지](링크) | 프로젝트 전체 개요 및 단계별 설계 문서 |
+| **🏠 Wiki Home** | [Wiki 메인 페이지](https://github.com/msp-architect-2026/kim-youngchan/wiki) | 프로젝트 전체 개요 및 단계별 설계 문서 |
 
 ### 🛠 기술 문서
 | 문서 명칭 | 설명 |
 | :--- | :--- |
-| [🔗 API 명세서](링크) | REST API 엔드포인트 (auth, product, order) 및 Request/Response 스펙 |
-| [📊 ERD 및 데이터 모델](링크) | MySQL 스키마 설계 (users, products, orders, order_items) |
-| [⚙️ 환경 설정 가이드](링크) | k3s 설치, MetalLB 구성, Registry 연동 단계별 가이드 |
-| [🔧 트러블슈팅](링크) | 자주 발생하는 이슈 및 해결 방법 (OOMKilled, ImagePullBackOff 등) |
+| [🔗 API 명세서](https://github.com/msp-architect-2026/kim-youngchan/wiki/API-%EB%AA%85%EC%84%B8%EC%84%9C) | REST API 엔드포인트 (auth, product, order) 및 Request/Response 스펙 |
+| [📊 ERD 및 데이터 모델](https://github.com/msp-architect-2026/kim-youngchan/wiki/ERD-%EB%B0%8F-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EB%AA%A8%EB%8D%B8%EB%A7%81) | MySQL 스키마 설계 (users, products, orders, order_items) |
+| [⚙️ 환경 설정 가이드](https://github.com/msp-architect-2026/kim-youngchan/wiki/%EC%84%A4%EC%B9%98-%EA%B0%80%EC%9D%B4%EB%93%9C) | k3s 설치, MetalLB 구성, Registry 연동 단계별 가이드 |
+| [🔧 트러블슈팅](https://github.com/msp-architect-2026/kim-youngchan/wiki/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85) | 자주 발생하는 이슈 및 해결 방법 (OOMKilled, ImagePullBackOff 등) |
 
 ### 📝 회고 및 이력
 | 문서 명칭 | 설명 |
 | :--- | :--- |
-| [🗓 Sprint 회고](링크) | Phase별 진행 상황 및 개선 사항 |
-| [📌 릴리즈 노트](링크) | 버전별 변경 사항 및 배포 이력 |
-| [🐛 Known Issues](링크) | 현재 알려진 제약 사항 및 향후 개선 계획 |
+| [🗓 개인 회고](https://github.com/msp-architect-2026/kim-youngchan/wiki/Phase-1-%ED%9A%8C%EA%B3%A0) | Phase별 진행 상황 및 개선 사항 |
+| [🐛 Known Issues](https://github.com/msp-architect-2026/kim-youngchan/wiki/Known-Issues) | 현재 알려진 제약 사항 및 향후 개선 계획 |
 
 ---
 
 ### 🔍 빠른 링크
-- 🚀 **시작하기**: [환경 설정 가이드](링크) → [Registry 설정](링크) → [모니터링 설치](링크)
-- 🏗 **아키텍처 이해**: [전체 아키텍처](링크) → [서비스 흐름도](링크)
-- 📊 **성능 검증**: [k6 부하 테스트](링크) → [Grafana 대시보드](링크)
-- 🔧 **문제 해결**: [트러블슈팅](링크) → [Known Issues](링크)
+- 🏗 **아키텍처 이해**: [전체 아키텍처](https://github.com/msp-architect-2026/kim-youngchan/wiki/%EC%A0%84%EC%B2%B4-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98) → [서비스 흐름도](https://github.com/msp-architect-2026/kim-youngchan/wiki/%EC%84%9C%EB%B9%84%EC%8A%A4-%ED%9D%90%EB%A6%84%EB%8F%84)
+- 📊 **성능 검증**: [k6 부하 테스트](https://github.com/msp-architect-2026/kim-youngchan/wiki/%EC%84%B1%EB%8A%A5-%EB%AA%A9%ED%91%9C-%EA%B2%80%EC%A6%9D) → [Grafana 대시보드](https://github.com/msp-architect-2026/kim-youngchan/wiki/Grafana-%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C)
