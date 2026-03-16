@@ -57,7 +57,6 @@
 
 > 📖 Detailed Documentation
 > 프로젝트의 아키텍처, 기술 선정 근거 및 상세 구현 방법은 Wiki에서 확인하실 수 있습니다.
-> * [**Architecture & Tech Stack**](Wiki_링크_주소) : 왜 이 기술들을 선택했는가? (선정 근거 및 비교)
 
 ---
 
