@@ -64,18 +64,11 @@
 
 >아래는 본 프로젝트의 쿠버네티스 인프라 아키텍처입니다.
 
-<img width="2106" height="1794" alt="쿠버네티스 아키텍처 drawio" src="https://github.com/user-attachments/assets/81cb4c43-d04c-490e-bcb8-84c10f89b236" />
+<img width="3512" height="1984" alt="아키텍처 최종1-페이지-2 drawio" src="https://github.com/user-attachments/assets/dd958ab6-f890-4e43-871f-fc31090f2baf" />
+
 <br>
 
 ---
-
-## 🔄 서비스 흐름도
->아래는 본 프로젝트 아키텍처 흐름을 쉽게 파악하기 위한 이미지입니다.
-
-<img width="2112" height="1578" alt="서비스 흐름도 drawio" src="https://github.com/user-attachments/assets/292681bd-a7ec-4ada-a418-57d424a7befc" />
-
----
-<br>
 
 ## 📚 문서 안내
 
