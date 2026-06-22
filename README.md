@@ -1,4 +1,6 @@
 # 🚀 DropX
+<img width="960" height="280" alt="dropx_logo" src="https://github.com/user-attachments/assets/ed678c00-b305-42cf-9a37-8d7f0b463de8" />
+
 
 > **"한정판 운동화 드롭 상황에서 동시성 충돌 방지 및 재고의 음수 없이 주문을 처리하도록 설계된 Kubernetes + GitOps 기반 주문 인프라 플랫폼"**
 
